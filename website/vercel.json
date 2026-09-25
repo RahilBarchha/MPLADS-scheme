@@ -1,5 +1,18 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/pages/login.html" },
+    { "source": "/login", "destination": "/pages/login.html" },
+    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/monitoring", "destination": "/pages/monitoring.html" },
+    { "source": "/works", "destination": "/pages/works.html" },
+    { "source": "/funds", "destination": "/pages/funds.html" },
+    { "source": "/alerts", "destination": "/pages/alerts.html" },
+    { "source": "/analytics", "destination": "/pages/analytics.html" },
+    { "source": "/reports", "destination": "/pages/reports.html" },
+    { "source": "/forensics", "destination": "/pages/forensics.html" },
+    { "source": "/settings", "destination": "/pages/settings.html" }
+  ]
 }
