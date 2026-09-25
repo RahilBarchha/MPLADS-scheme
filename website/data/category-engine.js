@@ -453,75 +453,95 @@
     /**
      * Generates rich, distinct works customized to ANY filter criteria.
      * Guaranteed strictly non-zero amounts and positive progress.
+     * Supports both criteria object { category, district, ... } and individual positional arguments.
      */
-    function generateWorksForCombination(criteria = {}) {
-        const fy = criteria.fy && criteria.fy !== 'ALL' ? criteria.fy : '2025-26';
-        const district = criteria.district && criteria.district !== 'ALL' ? criteria.district : 'Varanasi';
-        const constituency = criteria.constituency && criteria.constituency !== 'ALL' ? criteria.constituency : `${district} (PC-77)`;
-        const category = criteria.category && criteria.category !== 'ALL' ? criteria.category : 'Drinking Water & Sanitation';
-        const status = criteria.status && criteria.status !== 'ALL' ? criteria.status : 'ALL';
-        const risk = criteria.risk && criteria.risk !== 'ALL' ? criteria.risk : 'ALL';
+    function generateWorksForCombination(criteria = {}, optDistrict, optFy, optStatus, optRisk) {
+        let opts = {};
+        if (typeof criteria === 'string') {
+            opts = {
+                category: criteria,
+                district: optDistrict || 'Varanasi',
+                fy: optFy || '2025-26',
+                status: optStatus || 'ALL',
+                risk: optRisk || 'ALL'
+            };
+        } else {
+            opts = criteria || {};
+        }
 
-        const prof = CATEGORY_PROFILES[category] || CATEGORY_PROFILES["Drinking Water & Sanitation"];
-        const templates = prof.worksTemplates;
+        const fy = opts.fy && opts.fy !== 'ALL' ? opts.fy : '2025-26';
+        const district = opts.district && opts.district !== 'ALL' ? opts.district : 'Varanasi';
+        const constituency = opts.constituency && opts.constituency !== 'ALL' ? opts.constituency : `${district} (PC-77)`;
+        const category = opts.category && opts.category !== 'ALL' ? opts.category : 'ALL';
+        const status = opts.status && opts.status !== 'ALL' ? opts.status : 'ALL';
+        const risk = opts.risk && opts.risk !== 'ALL' ? opts.risk : 'ALL';
 
+        const catsToGenerate = category !== 'ALL' ? [category] : CATEGORIES;
         const results = [];
-        templates.forEach((tmpl, idx) => {
-            let itemStatus = tmpl.status;
-            if (status !== 'ALL') {
-                itemStatus = status;
-            }
-            let itemRisk = tmpl.risk;
-            if (risk !== 'ALL') {
-                itemRisk = risk;
-            }
 
-            const isDel = itemStatus === 'DELAYED';
-            const isComp = itemStatus === 'COMPLETED';
-            let compPct = isComp ? 100 : (itemStatus === 'ONGOING' ? Math.max(55, tmpl.comp) : (isDel ? Math.max(30, tmpl.comp) : 25));
-            const approved = Math.max(28.0, Math.round((tmpl.cost + (idx * 6.5) - 3.0) * 10) / 10);
-            const released = isComp ? approved : Math.max(22.0, Math.round(approved * 0.88 * 10) / 10);
-            const spent = isComp ? released : Math.max(16.0, Math.round(released * (compPct / 100) * 10) / 10);
-            const delayDays = isDel ? (tmpl.days || (75 + idx * 15)) : 0;
-            const agency = prof.agencies[idx % prof.agencies.length] + ` (${district})`;
+        catsToGenerate.forEach((catName, catIdx) => {
+            const prof = CATEGORY_PROFILES[catName] || CATEGORY_PROFILES["Drinking Water & Sanitation"];
+            const templates = prof.worksTemplates;
 
-            const workId = `WRK-2026-${prof.code}-${district.substring(0, 3).toUpperCase()}-${String(100 + idx).padStart(3, '0')}`;
+            // Generate at least 2 works per category when ALL (total 12 works), or all templates when specific category
+            const countToTake = category === 'ALL' ? 2 : templates.length;
+            templates.slice(0, countToTake).forEach((tmpl, idx) => {
+                let itemStatus = tmpl.status;
+                if (status !== 'ALL') {
+                    itemStatus = status;
+                }
+                let itemRisk = tmpl.risk;
+                if (risk !== 'ALL') {
+                    itemRisk = risk;
+                }
 
-            results.push({
-                id: workId,
-                name: `${tmpl.title}, ${district}`,
-                district: district,
-                constituency: constituency,
-                mp: `Hon. MP (${district})`,
-                financialYear: fy,
-                category: category,
-                approvedAmountLakhs: approved,
-                releasedAmountLakhs: released,
-                expenditureLakhs: spent,
-                completionPct: compPct,
-                status: itemStatus,
-                risk: itemRisk,
-                monitoringStatus: isDel ? "Attention Needed" : (itemStatus === 'ONGOING' ? "Normal" : "Completed"),
-                monitoringObservations: isDel ?
-                    `Milestone delivery overdue by ${delayDays} days. Formal compliance directive dispatched to ${agency}.` :
-                    `Physical execution compliant with MoSPI technical norms. Statutory inspection cleared.`,
-                daysDelayed: delayDays,
-                lastUpdated: "2026-09-22",
-                startDate: fy === '2023-24' ? "2023-09-15" : (fy === '2024-25' ? "2024-10-10" : "2025-07-15"),
-                expectedCompletion: isComp ? "2026-04-30" : "2026-12-31",
-                actualCompletion: isComp ? "2026-04-15" : null,
-                implementingAgency: agency,
-                description: `${tmpl.title} sanctioned under MPLADS priority allocation for ${district} (${constituency}).`,
-                milestones: [
-                    { title: "Technical Sanction & Geo-Survey", plannedDate: "2025-08-10", actualDate: "2025-08-15", status: "COMPLETED" },
-                    { title: "Civil Foundations & Assembly", plannedDate: "2026-02-28", actualDate: compPct > 50 ? "2026-03-05" : null, status: compPct > 50 ? "COMPLETED" : (isDel ? "DELAYED" : "ONGOING") },
-                    { title: "Final Commissioning & Audit", plannedDate: "2026-10-31", actualDate: isComp ? "2026-04-15" : null, status: isComp ? "COMPLETED" : "PENDING" }
-                ],
-                timeline: [
-                    { event: "Administrative Sanction Issued", date: "2025-07-05", category: "Approval", desc: `Sanction recorded by Nodal Officer (${district}).` },
-                    { event: "First Installment Disbursed", date: "2025-07-28", category: "Release", desc: `Disbursed ₹${released} Lakhs via PFMS SNA gateway.` }
-                ],
-                coordinates: { lat: 25.32 + (idx * 0.05), lng: 82.98 + (idx * 0.05) }
+                const isDel = itemStatus === 'DELAYED';
+                const isComp = itemStatus === 'COMPLETED';
+                let compPct = isComp ? 100 : (itemStatus === 'ONGOING' ? Math.max(55, tmpl.comp) : (isDel ? Math.max(30, tmpl.comp) : 25));
+                const approved = Math.max(28.0, Math.round((tmpl.cost + (idx * 6.5) - 3.0) * 10) / 10);
+                const released = isComp ? approved : Math.max(22.0, Math.round(approved * 0.88 * 10) / 10);
+                const spent = isComp ? released : Math.max(16.0, Math.round(released * (compPct / 100) * 10) / 10);
+                const delayDays = isDel ? (tmpl.days || (75 + idx * 15)) : 0;
+                const agency = prof.agencies[idx % prof.agencies.length] + ` (${district})`;
+
+                const workId = `WRK-2026-${prof.code}-${district.substring(0, 3).toUpperCase()}-${String(100 + catIdx * 10 + idx).padStart(3, '0')}`;
+
+                results.push({
+                    id: workId,
+                    name: `${tmpl.title}, ${district}`,
+                    district: district,
+                    constituency: constituency,
+                    mp: `Hon. MP (${district})`,
+                    financialYear: fy,
+                    category: catName,
+                    approvedAmountLakhs: approved,
+                    releasedAmountLakhs: released,
+                    expenditureLakhs: spent,
+                    completionPct: compPct,
+                    status: itemStatus,
+                    risk: itemRisk,
+                    monitoringStatus: isDel ? "Attention Needed" : (itemStatus === 'ONGOING' ? "Normal" : "Completed"),
+                    monitoringObservations: isDel ?
+                        `Milestone delivery overdue by ${delayDays} days. Formal compliance directive dispatched to ${agency}.` :
+                        `Physical execution compliant with MoSPI technical norms. Statutory inspection cleared.`,
+                    daysDelayed: delayDays,
+                    lastUpdated: "2026-09-22",
+                    startDate: fy === '2023-24' ? "2023-09-15" : (fy === '2024-25' ? "2024-10-10" : "2025-07-15"),
+                    expectedCompletion: isComp ? "2026-04-30" : "2026-12-31",
+                    actualCompletion: isComp ? "2026-04-15" : null,
+                    implementingAgency: agency,
+                    description: `${tmpl.title} sanctioned under MPLADS priority allocation for ${district} (${constituency}).`,
+                    milestones: [
+                        { title: "Technical Sanction & Geo-Survey", plannedDate: "2025-08-10", actualDate: "2025-08-15", status: "COMPLETED" },
+                        { title: "Civil Foundations & Assembly", plannedDate: "2026-02-28", actualDate: compPct > 50 ? "2026-03-05" : null, status: compPct > 50 ? "COMPLETED" : (isDel ? "DELAYED" : "ONGOING") },
+                        { title: "Final Commissioning & Audit", plannedDate: "2026-10-31", actualDate: isComp ? "2026-04-15" : null, status: isComp ? "COMPLETED" : "PENDING" }
+                    ],
+                    timeline: [
+                        { event: "Administrative Sanction Issued", date: "2025-07-05", category: "Approval", desc: `Sanction recorded by Nodal Officer (${district}).` },
+                        { event: "First Installment Disbursed", date: "2025-07-28", category: "Release", desc: `Disbursed ₹${released} Lakhs via PFMS SNA gateway.` }
+                    ],
+                    coordinates: { lat: 25.32 + (idx * 0.05), lng: 82.98 + (idx * 0.05) }
+                });
             });
         });
 
@@ -709,6 +729,47 @@
         });
     }
 
+    /**
+     * Incrementally increases the specific category's allocation/release/expenditure
+     * whenever a user records a transaction!
+     */
+    function recordCategoryTransaction(category, type, amountLakhs) {
+        const amount = Number(amountLakhs) || 0;
+        if (amount <= 0) return null;
+        const amountCr = Math.round((amount / 100) * 1000) / 1000;
+        const cat = CATEGORY_PROFILES[category] ? category : "Drinking Water & Sanitation";
+        const prof = CATEGORY_PROFILES[cat];
+
+        if (type === 'ALLOCATION') {
+            prof.baseAllocCr = Math.round((prof.baseAllocCr + amountCr) * 100) / 100;
+        } else if (type === 'RELEASE') {
+            prof.baseRelCr = Math.round((prof.baseRelCr + amountCr) * 100) / 100;
+            if (prof.baseRelCr > prof.baseAllocCr) {
+                prof.baseAllocCr = prof.baseRelCr;
+            }
+        } else if (type === 'EXPENDITURE') {
+            prof.baseExpCr = Math.round((prof.baseExpCr + amountCr) * 100) / 100;
+            if (prof.baseExpCr > prof.baseRelCr) {
+                prof.baseRelCr = prof.baseExpCr;
+            }
+            if (prof.baseRelCr > prof.baseAllocCr) {
+                prof.baseAllocCr = prof.baseRelCr;
+            }
+        } else if (type === 'REFUND') {
+            prof.baseExpCr = Math.max(0.95, Math.round((prof.baseExpCr - amountCr) * 100) / 100);
+        }
+
+        return {
+            category: cat,
+            type: type,
+            amountAddedLakhs: amount,
+            amountAddedCr: amountCr,
+            newAllocCr: prof.baseAllocCr,
+            newRelCr: prof.baseRelCr,
+            newExpCr: prof.baseExpCr
+        };
+    }
+
     // Expose engine to global window and module exports
     const MPLADS_DATA_ENGINE = {
         CATEGORIES,
@@ -720,7 +781,8 @@
         generateWorksForCombination,
         generateTransactionsForCombination,
         generateAlertsForCombination,
-        getDistrictMonitoringSummaries
+        getDistrictMonitoringSummaries,
+        recordCategoryTransaction
     };
 
     if (typeof window !== 'undefined') {

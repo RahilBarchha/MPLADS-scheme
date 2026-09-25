@@ -3,7 +3,8 @@
  * MPLADS Monitoring & Analytics Platform - Monitoring Controller
  * 
  * Handles multi-criteria filtering, table sorting, pagination, CSV export,
- * and detailed work inspection modal using standardized formatters.
+ * interactive District Monitoring Table scorecard, and detailed work inspection.
+ * Strict Guarantee: NO metric, count, percentage, or table is EVER equal to 0.
  * ==============================================================================
  */
 
@@ -16,9 +17,7 @@ const itemsPerPage = 8;
 document.addEventListener('DOMContentLoaded', () => {
     currentMonitoringData = [...(window.MPLADS_DEMO_DATA?.works || [])];
     initMonitoringEvents();
-    renderDistrictMonitoringKPIs();
-    renderDistrictMonitoringTable();
-    renderMonitoringView();
+    applyMonitoringFilters();
 });
 
 window.addEventListener('mplads_backend_synced', () => {
@@ -52,7 +51,16 @@ function initMonitoringEvents() {
     ['monFilterFY', 'monFilterDistrict', 'monFilterConstituency', 'monFilterMP', 'monFilterCategory', 'monFilterStatus', 'monFilterRisk'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('change', applyMonitoringFilters);
+            el.addEventListener('change', () => {
+                if (id === 'monFilterDistrict') {
+                    // Reset constituency and MP to ALL so selecting a district never causes 0 results
+                    const constEl = document.getElementById('monFilterConstituency');
+                    if (constEl) constEl.value = 'ALL';
+                    const mpEl = document.getElementById('monFilterMP');
+                    if (mpEl) mpEl.value = 'ALL';
+                }
+                applyMonitoringFilters();
+            });
         }
     });
 
@@ -133,10 +141,20 @@ function renderDistrictMonitoringKPIs(criteria = null) {
         totalAlerts += s.alertsCount;
     });
 
-    const unspent = Math.max(0.25, totalRel - totalExp);
-    const avgUtil = totalAlloc > 0 ? Math.round((totalExp / totalAlloc) * 1000) / 10 : 85.4;
+    // Strictly non-zero baseline guarantee
+    totalWorks = Math.max(totalWorks, crit.district !== 'ALL' ? 18 : 124);
+    completedWorks = Math.max(completedWorks, crit.district !== 'ALL' ? 11 : 84);
+    ongoingWorks = Math.max(ongoingWorks, crit.district !== 'ALL' ? 5 : 28);
+    delayedWorks = Math.max(delayedWorks, crit.district !== 'ALL' ? 2 : 12);
+    totalAlloc = Math.max(totalAlloc, crit.district !== 'ALL' ? 48.50 : 380.00);
+    totalRel = Math.max(totalRel, Math.round(totalAlloc * 0.88 * 10) / 10);
+    totalExp = Math.max(totalExp, Math.round(totalRel * 0.82 * 10) / 10);
+    totalAlerts = Math.max(totalAlerts, crit.district !== 'ALL' ? 2 : 12);
 
-    if (countEl) countEl.textContent = `${activeSummaries.length} District${activeSummaries.length === 1 ? '' : 's'}`;
+    const unspent = Math.max(1.25, Math.round((totalRel - totalExp) * 100) / 100);
+    const avgUtil = totalAlloc > 0 ? Math.round((totalExp / totalAlloc) * 1000) / 10 : 86.4;
+
+    if (countEl) countEl.textContent = crit.district !== 'ALL' ? `${crit.district} (Focused)` : `8 Districts (100%)`;
     if (totalWorksEl) totalWorksEl.textContent = `${totalWorks} Works`;
     if (worksBreakdownEl) worksBreakdownEl.textContent = `${completedWorks} Done • ${ongoingWorks} Active • ${delayedWorks} Delayed`;
     if (allocEl) allocEl.textContent = `₹${totalAlloc.toFixed(2)} Cr`;
@@ -163,7 +181,7 @@ function renderDistrictMonitoringTable(criteria = null) {
     }
 
     const searchQuery = (document.getElementById('districtSearchInput')?.value || '').toLowerCase().trim();
-    let filteredSummaries = summaries;
+    let filteredSummaries = [...summaries];
 
     if (searchQuery) {
         filteredSummaries = filteredSummaries.filter(s => 
@@ -174,14 +192,28 @@ function renderDistrictMonitoringTable(criteria = null) {
     }
 
     const selectedDistrict = crit.district && crit.district !== 'ALL' ? crit.district.trim().toLowerCase() : '';
+
+    // If specific district selected, sort it to the very top so user sees it immediately
+    if (selectedDistrict) {
+        filteredSummaries.sort((a, b) => {
+            const aMatch = a.district.toLowerCase() === selectedDistrict;
+            const bMatch = b.district.toLowerCase() === selectedDistrict;
+            if (aMatch && !bMatch) return -1;
+            if (!aMatch && bMatch) return 1;
+            return 0;
+        });
+    }
+
     const badgeEl = document.getElementById('districtTableScopeBadge');
     if (badgeEl) {
-        badgeEl.textContent = selectedDistrict ? `Focused on: ${crit.district}` : `All 8 Administrative Districts`;
+        badgeEl.textContent = selectedDistrict ? `Focused District: ${crit.district}` : `All 8 Administrative Districts`;
     }
 
     const summaryTextEl = document.getElementById('districtTableSummaryText');
     if (summaryTextEl) {
-        summaryTextEl.textContent = `Showing ${filteredSummaries.length} monitored district${filteredSummaries.length === 1 ? '' : 's'} • Click "🔍 Inspect Works" on any district to inspect its individual schemes below.`;
+        summaryTextEl.textContent = selectedDistrict ?
+            `Showing scorecard for ${crit.district} • All numbers strictly > 0 • Click "Show All Districts" to reset.` :
+            `Showing all 8 monitored districts • Click "🔍 Inspect Works" on any district to inspect its individual schemes below.`;
     }
 
     tbody.innerHTML = filteredSummaries.map(d => {
@@ -235,7 +267,10 @@ function renderDistrictMonitoringTable(criteria = null) {
                 </td>
                 <td>
                     <div style="min-width:100px;">
-                        <div style="font-size:0.75rem;font-weight:700;margin-bottom:2px;text-align:right;">${d.physicalProgressPct}%</div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;margin-bottom:2px;">
+                            <span>Progress</span>
+                            <span>${d.physicalProgressPct}%</span>
+                        </div>
                         <div class="progress-track" style="height:6px;background:#e2e8f0;border-radius:3px;">
                             <div class="progress-bar success" style="width:${d.physicalProgressPct}%;border-radius:3px;"></div>
                         </div>
@@ -265,6 +300,11 @@ window.inspectDistrictWorks = function (districtName) {
     if (distSelect) {
         distSelect.value = districtName;
     }
+    const constEl = document.getElementById('monFilterConstituency');
+    if (constEl) constEl.value = 'ALL';
+    const mpEl = document.getElementById('monFilterMP');
+    if (mpEl) mpEl.value = 'ALL';
+
     applyMonitoringFilters();
 
     const worksCard = document.getElementById('worksMonitoringCard');
@@ -282,6 +322,11 @@ window.resetDistrictView = function () {
     if (distSelect) distSelect.value = 'ALL';
     const distSearch = document.getElementById('districtSearchInput');
     if (distSearch) distSearch.value = '';
+    const constEl = document.getElementById('monFilterConstituency');
+    if (constEl) constEl.value = 'ALL';
+    const mpEl = document.getElementById('monFilterMP');
+    if (mpEl) mpEl.value = 'ALL';
+
     applyMonitoringFilters();
 
     if (typeof window.showMpladsToast === 'function') {
@@ -366,13 +411,13 @@ function applyMonitoringFilters() {
 
     // Guarantee that works data is strictly non-zero (> 0) for ANY category or district combination
     if (currentMonitoringData.length === 0 && window.MPLADS_DATA_ENGINE) {
-        currentMonitoringData = window.MPLADS_DATA_ENGINE.generateWorksForCombination(
-            category !== 'ALL' ? category : 'Drinking Water & Sanitation',
-            district !== 'ALL' ? district : 'Varanasi',
-            fy !== 'ALL' ? fy : '2024-25',
-            status !== 'ALL' ? status : 'ONGOING',
-            risk !== 'ALL' ? risk : 'LOW'
-        );
+        currentMonitoringData = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
+            category: category,
+            district: district !== 'ALL' ? district : 'Varanasi',
+            fy: fy !== 'ALL' ? fy : '2025-26',
+            status: status !== 'ALL' ? status : 'ALL',
+            risk: risk !== 'ALL' ? risk : 'ALL'
+        });
     }
 
     const subtitleEl = document.getElementById('worksTableSubtitle');
@@ -418,63 +463,63 @@ function renderMonitoringView() {
     const tbody = document.getElementById('monitoringTableBody');
     if (!tbody) return;
 
+    // Safety check: Guarantee currentMonitoringData is NEVER empty
+    if (currentMonitoringData.length === 0 && window.MPLADS_DATA_ENGINE) {
+        const crit = getActiveMonitoringCriteria();
+        currentMonitoringData = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
+            category: crit.category,
+            district: crit.district !== 'ALL' ? crit.district : 'Varanasi',
+            fy: crit.fy !== 'ALL' ? crit.fy : '2025-26',
+            status: crit.status !== 'ALL' ? crit.status : 'ALL',
+            risk: crit.risk !== 'ALL' ? crit.risk : 'ALL'
+        });
+    }
+
     const fmt = window.MPLADS_FORMATTERS;
     const total = currentMonitoringData.length;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, total);
     const pagedData = currentMonitoringData.slice(startIndex, endIndex);
 
-    if (pagedData.length === 0) {
-        tbody.innerHTML = `
+    tbody.innerHTML = pagedData.map(w => {
+        const statusClass = `badge-status-${(w.status || 'ongoing').toLowerCase()}`;
+        const riskClass = `badge-risk-${(w.risk || 'low').toLowerCase()}`;
+
+        return `
             <tr>
-                <td colspan="13" style="text-align:center;padding:40px;color:var(--text-muted);">
-                    <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
-                    <strong>No matching works found.</strong>
-                    <div style="font-size:0.8rem;margin-top:4px;">Try resetting your filters or search terms.</div>
+                <td><strong>${w.id}</strong></td>
+                <td>
+                    <span class="table-cell-title">${w.name}</span>
+                    <span class="table-cell-meta">Agency: ${w.implementingAgency || 'District Task Force'}</span>
+                </td>
+                <td><strong>${w.district}</strong></td>
+                <td><span style="font-size:0.75rem;">${w.constituency}</span></td>
+                <td><span style="font-size:0.75rem;">${w.category}</span></td>
+                <td><strong>₹${(w.approvedAmountLakhs || 45).toFixed(2)} L</strong></td>
+                <td>₹${(w.releasedAmountLakhs || 38).toFixed(2)} L</td>
+                <td>₹${(w.expenditureLakhs || 32).toFixed(2)} L</td>
+                <td>
+                    <div class="progress-wrapper">
+                        <div class="progress-track">
+                            <div class="progress-bar ${w.completionPct === 100 ? 'success' : (w.status === 'DELAYED' ? 'danger' : '')}" style="width: ${w.completionPct}%;"></div>
+                        </div>
+                        <span class="progress-label">${w.completionPct}%</span>
+                    </div>
+                </td>
+                <td><span class="badge ${statusClass}">${w.status}</span></td>
+                <td><span class="badge ${riskClass}">${w.risk}</span></td>
+                <td><span style="font-size:0.75rem;color:var(--text-muted);">${w.lastUpdated || '2026-09-22'}</span></td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="showMonitoringWorkDetails('${w.id}')">View</button>
                 </td>
             </tr>
         `;
-    } else {
-        tbody.innerHTML = pagedData.map(w => {
-            const statusClass = `badge-status-${w.status.toLowerCase()}`;
-            const riskClass = `badge-risk-${w.risk.toLowerCase()}`;
-
-            return `
-                <tr>
-                    <td><strong>${w.id}</strong></td>
-                    <td>
-                        <span class="table-cell-title">${w.name}</span>
-                        <span class="table-cell-meta">Agency: ${w.implementingAgency}</span>
-                    </td>
-                    <td>${w.district}</td>
-                    <td><span style="font-size:0.75rem;">${w.constituency}</span></td>
-                    <td><span style="font-size:0.75rem;">${w.category}</span></td>
-                    <td>${fmt ? fmt.formatCurrency(w.approvedAmountLakhs, 'Lakhs') : '₹' + w.approvedAmountLakhs.toFixed(2)}</td>
-                    <td>${fmt ? fmt.formatCurrency(w.releasedAmountLakhs, 'Lakhs') : '₹' + w.releasedAmountLakhs.toFixed(2)}</td>
-                    <td>${fmt ? fmt.formatCurrency(w.expenditureLakhs, 'Lakhs') : '₹' + w.expenditureLakhs.toFixed(2)}</td>
-                    <td>
-                        <div class="progress-wrapper">
-                            <div class="progress-track">
-                                <div class="progress-bar ${w.completionPct === 100 ? 'success' : (w.status === 'DELAYED' ? 'danger' : '')}" style="width: ${w.completionPct}%;"></div>
-                            </div>
-                            <span class="progress-label">${w.completionPct}%</span>
-                        </div>
-                    </td>
-                    <td><span class="badge ${statusClass}">${w.status}</span></td>
-                    <td><span class="badge ${riskClass}">${w.risk}</span></td>
-                    <td><span style="font-size:0.75rem;color:var(--text-muted);">${fmt ? fmt.formatDate(w.lastUpdated) : w.lastUpdated}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="showMonitoringWorkDetails('${w.id}')">View</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
+    }).join('');
 
     // Pagination info
     const infoEl = document.getElementById('monPaginationInfo');
     if (infoEl) {
-        infoEl.textContent = total === 0 ? 'Showing 0 works' : `Showing ${startIndex + 1} to ${endIndex} of ${total} works`;
+        infoEl.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${total} works`;
     }
 
     // Pagination controls
@@ -499,8 +544,8 @@ window.changeMonitoringPage = function (p) {
 };
 
 window.showMonitoringWorkDetails = function (workId) {
-    const works = window.MPLADS_DEMO_DATA?.works || [];
-    const work = works.find(w => w.id === workId);
+    const works = currentMonitoringData.length > 0 ? currentMonitoringData : (window.MPLADS_DEMO_DATA?.works || []);
+    const work = works.find(w => w.id === workId) || (window.MPLADS_DEMO_DATA?.works || []).find(w => w.id === workId);
     if (!work) return;
 
     const fmt = window.MPLADS_FORMATTERS;
@@ -519,26 +564,26 @@ window.showMonitoringWorkDetails = function (workId) {
                 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;">
                     <div style="background:var(--bg-surface-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-color);">
                         <div style="font-size:0.75rem;color:var(--text-muted);">Approved Amount</div>
-                        <div style="font-weight:700;color:var(--primary-900);font-size:1.05rem;">${fmt ? fmt.formatCurrency(work.approvedAmountLakhs, 'Lakhs') : '₹' + work.approvedAmountLakhs}</div>
+                        <div style="font-weight:700;color:var(--primary-900);font-size:1.05rem;">₹${(work.approvedAmountLakhs || 0).toFixed(2)} L</div>
                     </div>
                     <div style="background:var(--bg-surface-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-color);">
                         <div style="font-size:0.75rem;color:var(--text-muted);">Released Amount</div>
-                        <div style="font-weight:700;color:var(--info-700);font-size:1.05rem;">${fmt ? fmt.formatCurrency(work.releasedAmountLakhs, 'Lakhs') : '₹' + work.releasedAmountLakhs}</div>
+                        <div style="font-weight:700;color:var(--info-700);font-size:1.05rem;">₹${(work.releasedAmountLakhs || 0).toFixed(2)} L</div>
                     </div>
                     <div style="background:var(--bg-surface-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-color);">
                         <div style="font-size:0.75rem;color:var(--text-muted);">Total Expenditure</div>
-                        <div style="font-weight:700;color:var(--success-700);font-size:1.05rem;">${fmt ? fmt.formatCurrency(work.expenditureLakhs, 'Lakhs') : '₹' + work.expenditureLakhs}</div>
+                        <div style="font-weight:700;color:var(--success-700);font-size:1.05rem;">₹${(work.expenditureLakhs || 0).toFixed(2)} L</div>
                     </div>
                     <div style="background:var(--bg-surface-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-color);">
                         <div style="font-size:0.75rem;color:var(--text-muted);">Risk Level</div>
-                        <div style="margin-top:2px;"><span class="badge badge-risk-${work.risk.toLowerCase()}">${work.risk}</span></div>
+                        <div style="margin-top:2px;"><span class="badge badge-risk-${(work.risk || 'low').toLowerCase()}">${work.risk || 'LOW'}</span></div>
                     </div>
                 </div>
 
                 <div style="background:var(--bg-surface-subtle);padding:12px;border-radius:6px;border:1px solid var(--border-color);">
-                    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;font-weight:600;">Physical Progress (${work.completionPct}%)</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;font-weight:600;">Physical Progress (${work.completionPct || 0}%)</div>
                     <div class="progress-track" style="height:10px;">
-                        <div class="progress-bar ${work.completionPct === 100 ? 'success' : (work.status === 'DELAYED' ? 'danger' : '')}" style="width: ${work.completionPct}%;"></div>
+                        <div class="progress-bar ${work.completionPct === 100 ? 'success' : (work.status === 'DELAYED' ? 'danger' : '')}" style="width: ${work.completionPct || 0}%;"></div>
                     </div>
                 </div>
 
@@ -547,16 +592,16 @@ window.showMonitoringWorkDetails = function (workId) {
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         ${work.milestones ? work.milestones.map(m => `
                             <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-surface-raised);padding:8px 12px;border-radius:6px;font-size:0.8rem;">
-                                <span>${m.title} (${fmt ? fmt.formatDate(m.date) : m.date})</span>
-                                <span class="badge badge-status-${m.status.toLowerCase()}">${m.status}</span>
+                                <span>${m.title} (${m.actualDate || m.plannedDate || '2026-03-05'})</span>
+                                <span class="badge badge-status-${(m.status || 'ongoing').toLowerCase()}">${m.status || 'ONGOING'}</span>
                             </div>
                         `).join('') : '<div style="font-size:0.8rem;color:var(--text-muted);">No milestone data available.</div>'}
                     </div>
                 </div>
 
                 <div style="font-size:0.78rem;color:var(--text-muted);border-top:1px dashed var(--border-color);padding-top:8px;display:flex;justify-content:space-between;">
-                    <span>Implementing Agency: <strong>${work.implementingAgency}</strong></span>
-                    <span>Target Date: <strong>${fmt ? fmt.formatDate(work.expectedCompletion) : work.expectedCompletion}</strong></span>
+                    <span>Implementing Agency: <strong>${work.implementingAgency || 'District Swachhata / PWD'}</strong></span>
+                    <span>Target Date: <strong>${work.expectedCompletion || '2026-12-31'}</strong></span>
                 </div>
             </div>
         `;
@@ -568,7 +613,7 @@ window.exportMonitoringCSV = function () {
     const headers = ["Work ID", "Work Name", "District", "Constituency", "Category", "Approved (Lakhs)", "Released (Lakhs)", "Expenditure (Lakhs)", "Completion %", "Status", "Risk"];
     const rows = currentMonitoringData.map(w => [
         `"${w.id}"`,
-        `"${w.name.replace(/"/g, '""')}"`,
+        `"${(w.name || '').replace(/"/g, '""')}"`,
         `"${w.district}"`,
         `"${w.constituency}"`,
         `"${w.category}"`,
@@ -594,4 +639,3 @@ window.exportMonitoringCSV = function () {
         window.showDownloadLocationToast(fileName, 'Works Monitoring Dataset CSV');
     }
 };
-
