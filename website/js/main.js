@@ -1143,7 +1143,7 @@ window.sendCopilotQuery = async function (queryText) {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 };
 
-// Global Issue Notice Helper (from Watchlist)
+// Global Issue Notice Helper (from Delayed Projects Watchlist)
 window.issueProjectNotice = function (workId) {
     const works = window.MPLADS_DEMO_DATA?.works || [];
     const work = works.find(w => w.id === workId) || { id: workId, name: 'Sanctioned Development Work', district: 'Assigned District' };
@@ -1153,57 +1153,134 @@ window.issueProjectNotice = function (workId) {
         noticeModal = document.createElement('div');
         noticeModal.className = 'modal-overlay';
         noticeModal.id = 'projectNoticeModal';
-        noticeModal.innerHTML = `
-            <div class="modal-container" style="max-width:540px;background:#fff;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.25);overflow:hidden;">
-                <div class="modal-header" style="background:#0f172a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
-                    <h3 class="modal-title" style="color:#fff;font-size:1.05rem;font-weight:700;">Administrative Notice Dispatch</h3>
-                    <button class="modal-close-btn" onclick="window.closeModal('projectNoticeModal')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>
-                </div>
-                <div class="modal-body" id="projectNoticeModalBody" style="padding:20px;"></div>
-                <div class="modal-footer" style="background:#f8fafc;padding:12px 20px;display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;">
-                    <button class="btn btn-secondary" onclick="window.closeModal('projectNoticeModal')">Close</button>
-                    <button class="btn btn-primary" id="btnDispatchNotice" style="background:#0284c7;border:none;color:#fff;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Countersign & Dispatch Notice</button>
-                </div>
-            </div>
-        `;
         document.body.appendChild(noticeModal);
     }
 
-    const noticeBody = document.getElementById('projectNoticeModalBody');
-    if (noticeBody) {
-        noticeBody.innerHTML = `
-            <div style="font-size:0.85rem;line-height:1.6;color:#334155;">
-                <div style="background:#fff1f2;border-left:4px solid #e11d48;padding:12px;border-radius:6px;margin-bottom:14px;">
-                    <strong style="color:#9f1239;">FORMAL NOTICE UNDER MoSPI GUIDELINES SECTION 7.4</strong>
-                    <div style="font-size:0.78rem;color:#be123c;margin-top:2px;">Subject: Project Completion Timeline Lapse & Explanation Call</div>
+    noticeModal.innerHTML = `
+        <div class="modal-container" style="max-width:560px;background:#ffffff;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;">
+            <div class="modal-header" style="background:#0f172a;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0284c7;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.3rem;">📜</span>
+                    <div>
+                        <h3 class="modal-title" style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;">Administrative Notice Dispatch</h3>
+                        <span style="font-size:0.72rem;color:#94a3b8;letter-spacing:0.03em;">MoSPI STATUTORY COMPLIANCE DIRECTIVE</span>
+                    </div>
                 </div>
-                <p><strong>Work Reference:</strong> ${work.id} — ${work.name}</p>
-                <p><strong>District Authority:</strong> Office of the District Magistrate & Nodal Officer, ${work.district}</p>
-                <p style="margin-top:10px;">
-                    This formal administrative notification prompts the executing agency to furnish an updated milestone physical schedule and fund reconciliation within <strong>7 business days</strong>.
-                </p>
-                <div style="margin-top:14px;background:#f8fafc;padding:10px;border-radius:6px;border:1px solid #e2e8f0;font-size:0.75rem;color:#64748b;">
-                    Official dispatch dispatched to Nodal Register and logged into AI Governance Audit trail.
+                <button class="modal-close-btn" onclick="window.closeModal('projectNoticeModal')" style="background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:4px 10px;border-radius:6px;" title="Close">✕</button>
+            </div>
+            <div class="modal-body" id="projectNoticeModalBody" style="padding:22px;color:#1e293b;">
+                <div style="font-size:0.86rem;line-height:1.6;color:#334155;">
+                    <div style="background:#fff1f2;border-left:4px solid #e11d48;padding:12px 14px;border-radius:6px;margin-bottom:16px;">
+                        <strong style="color:#9f1239;display:block;font-size:0.88rem;">FORMAL NOTICE UNDER MoSPI GUIDELINES SECTION 7.4</strong>
+                        <div style="font-size:0.80rem;color:#be123c;margin-top:2px;">Subject: Project Completion Timeline Lapse & Explanation Call</div>
+                    </div>
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+                        <p style="margin:0 0 6px 0;"><strong>Work Reference:</strong> <span style="font-family:monospace;color:#0284c7;font-weight:700;">${work.id}</span> — ${work.name}</p>
+                        <p style="margin:0;"><strong>District Authority:</strong> Office of the District Magistrate & Nodal Officer, ${work.district}</p>
+                    </div>
+                    <p style="margin:0 0 12px 0;">
+                        This formal administrative notification prompts the executing agency to furnish an updated milestone physical schedule and fund reconciliation within <strong>7 business days</strong>.
+                    </p>
+                    <div style="background:#f0f9ff;padding:10px 12px;border-radius:6px;border:1px solid #bae6fd;font-size:0.78rem;color:#0369a1;display:flex;align-items:center;gap:8px;">
+                        <span>🔒</span> Official dispatch will be timestamped, digitally countersigned by District Authority, and logged into AI Governance Audit trail.
+                    </div>
                 </div>
             </div>
-        `;
-    }
+            <div class="modal-footer" style="background:#f8fafc;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;">
+                <button class="btn btn-secondary" onclick="window.closeModal('projectNoticeModal')" style="padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Cancel</button>
+                <button class="btn btn-primary" id="btnCountersignNotice" onclick="window.executeCountersignAndDispatch('${work.id}')" style="background:#0284c7;border:none;color:#fff;padding:9px 20px;border-radius:6px;font-weight:700;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 3px 10px rgba(2,132,199,0.35);transition:all 0.2s ease;">
+                    ✍️ Countersign & Dispatch Notice
+                </button>
+            </div>
+        </div>
+    `;
 
-    const dispatchBtn = document.getElementById('btnDispatchNotice');
+    const dispatchBtn = noticeModal.querySelector('#btnCountersignNotice');
     if (dispatchBtn) {
-        dispatchBtn.onclick = () => {
-            dispatchBtn.innerHTML = '✓ Dispatched & Logged';
-            dispatchBtn.style.background = '#16a34a';
-            setTimeout(() => {
-                window.closeModal('projectNoticeModal');
-                dispatchBtn.innerHTML = 'Countersign & Dispatch Notice';
-                dispatchBtn.style.background = '#0284c7';
-            }, 1200);
-        };
+        dispatchBtn.disabled = false;
+        dispatchBtn.innerHTML = '✍️ Countersign & Dispatch Notice';
+        dispatchBtn.style.background = '#0284c7';
+        dispatchBtn.style.cursor = 'pointer';
+        dispatchBtn.onclick = () => window.executeCountersignAndDispatch(work.id);
     }
 
     window.openModal('projectNoticeModal');
 };
+
+// Global Execution Handler for Countersign & Dispatch Notice
+window.executeCountersignAndDispatch = function (workId) {
+    const noticeModal = document.getElementById('projectNoticeModal');
+    const dispatchBtn = noticeModal ? noticeModal.querySelector('#btnCountersignNotice') : document.getElementById('btnCountersignNotice');
+    const works = window.MPLADS_DEMO_DATA?.works || [];
+    const work = works.find(w => w.id === workId) || { id: workId, name: 'Project ' + workId };
+
+    if (dispatchBtn) {
+        dispatchBtn.disabled = true;
+        dispatchBtn.style.cursor = 'wait';
+        dispatchBtn.innerHTML = `
+            <span style="display:inline-block;width:14px;height:14px;border:2px solid #ffffff;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:6px;vertical-align:middle;"></span>
+            Signing & Dispatching...
+        `;
+        dispatchBtn.style.background = '#d97706';
+    }
+
+    setTimeout(() => {
+        if (dispatchBtn) {
+            dispatchBtn.innerHTML = '✓ Digitally Countersigned & Dispatched!';
+            dispatchBtn.style.background = '#16a34a';
+            dispatchBtn.style.boxShadow = '0 3px 10px rgba(22,163,74,0.4)';
+            dispatchBtn.style.cursor = 'default';
+        }
+
+        // Show toast notification
+        if (typeof window.showMpladsToast === 'function') {
+            window.showMpladsToast(`✓ Statutory Notice for ${work.id || workId} digitally countersigned & dispatched!`, 'success');
+        }
+
+        // Update the watchlist table on dashboard if present
+        const delayedRows = document.querySelectorAll('#delayedProjectsTableBody tr');
+        delayedRows.forEach(row => {
+            if (row.innerText.includes(workId)) {
+                const actionCell = row.cells[row.cells.length - 1];
+                if (actionCell) {
+                    actionCell.innerHTML = `<span class="badge badge-success" style="background:#16a34a;color:#ffffff;font-size:0.75rem;padding:4px 8px;border-radius:4px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">✓ Dispatched</span>`;
+                }
+            }
+        });
+
+        // Record in alerts / audit trail if available
+        if (window.MPLADS_DEMO_DATA && Array.isArray(window.MPLADS_DEMO_DATA.alerts)) {
+            window.MPLADS_DEMO_DATA.alerts.unshift({
+                id: 'ALT-NTC-' + Date.now().toString().slice(-4),
+                workId: workId,
+                title: `Statutory Notice Dispatched: ${work.name || workId}`,
+                type: 'compliance',
+                severity: 'medium',
+                date: new Date().toISOString().split('T')[0],
+                description: `Administrative notice countersigned and dispatched by Nodal Officer under MoSPI Sec 7.4.`,
+                status: 'dispatched'
+            });
+            const alertBadge = document.getElementById('sidebarAlertBadge');
+            if (alertBadge) {
+                const count = parseInt(alertBadge.textContent) || 0;
+                alertBadge.textContent = count + 1;
+            }
+        }
+
+        // Smoothly close modal after 1.2s and reset button state
+        setTimeout(() => {
+            window.closeModal('projectNoticeModal');
+            if (dispatchBtn) {
+                dispatchBtn.disabled = false;
+                dispatchBtn.innerHTML = '✍️ Countersign & Dispatch Notice';
+                dispatchBtn.style.background = '#0284c7';
+                dispatchBtn.style.boxShadow = '0 3px 10px rgba(2,132,199,0.35)';
+                dispatchBtn.style.cursor = 'pointer';
+            }
+        }, 1200);
+    }, 450);
+};
+
 
 // Executive Audit Scan Results Modal Initializer
 window.showAuditScanModal = function (summary) {
@@ -1373,7 +1450,7 @@ function initForensicModal() {
                     <button class="btn btn-secondary btn-sm" id="btnCopyDossier" onclick="window.copyForensicDossier()" title="Copy entire dossier as formatted text for official dispatch" style="padding:6px 12px;font-weight:600;background:#ffffff;border:1px solid #cbd5e1;border-radius:6px;color:#0f172a;cursor:pointer;">
                         📋 Copy Dossier
                     </button>
-                    <button class="btn btn-warning btn-sm" id="btnDispatchNotice" onclick="window.dispatchShowCauseNotice()" style="background:#ea580c!important;color:#fff!important;border:none!important;padding:6px 12px;font-weight:600;border-radius:6px;cursor:pointer;" title="Dispatch official statutory show-cause notice to Implementing Agency">
+                    <button class="btn btn-warning btn-sm" id="btnForensicDispatchNotice" onclick="window.dispatchShowCauseNotice()" style="background:#ea580c!important;color:#fff!important;border:none!important;padding:6px 12px;font-weight:600;border-radius:6px;cursor:pointer;" title="Dispatch official statutory show-cause notice to Implementing Agency">
                         ✉️ Issue Notice
                     </button>
                     <button class="btn btn-secondary btn-sm" onclick="window.print()" title="Print formal paper dossier" style="padding:6px 12px;font-weight:600;background:#ffffff;border:1px solid #cbd5e1;border-radius:6px;color:#0f172a;cursor:pointer;">
