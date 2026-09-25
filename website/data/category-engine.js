@@ -224,6 +224,44 @@
         }
     };
 
+    // Realistic Proportional Weights for Indian States (MoSPI Macro Distribution)
+    const STATE_WEIGHTS = {
+        "Uttar Pradesh": 1.25,
+        "Maharashtra": 1.18,
+        "Bihar": 1.05,
+        "West Bengal": 0.95,
+        "Madhya Pradesh": 0.90,
+        "Tamil Nadu": 0.92,
+        "Rajasthan": 0.88,
+        "Karnataka": 0.86,
+        "Gujarat": 0.94,
+        "Andhra Pradesh": 0.82,
+        "Odisha": 0.74,
+        "Telangana": 0.78,
+        "Kerala": 0.70,
+        "Jharkhand": 0.68,
+        "Assam": 0.62,
+        "Punjab": 0.65,
+        "Haryana": 0.60,
+        "Chhattisgarh": 0.58,
+        "Delhi (NCT)": 0.55,
+        "Uttarakhand": 0.48,
+        "Himachal Pradesh": 0.45,
+        "Jammu & Kashmir": 0.46,
+        "Goa": 0.35,
+        "Tripura": 0.38,
+        "Meghalaya": 0.36,
+        "Manipur": 0.34,
+        "Nagaland": 0.32,
+        "Mizoram": 0.30,
+        "Sikkim": 0.28,
+        "Arunachal Pradesh": 0.31,
+        "Ladakh": 0.25,
+        "Puducherry": 0.24,
+        "Chandigarh": 0.26,
+        "Andaman & Nicobar": 0.22
+    };
+
     // Realistic Proportional Weights for Districts (Normalized)
     const DISTRICT_WEIGHTS = {
         "Varanasi": 0.185,
@@ -258,6 +296,8 @@
      * Guaranteed strictly non-zero (> 0) on every field.
      */
     function calculateDataForCombination(criteria = {}) {
+        const state = criteria.state && criteria.state !== 'ALL' ? criteria.state : 
+            (criteria.district && criteria.district !== 'ALL' && typeof window !== 'undefined' && window.getStateForDistrict ? window.getStateForDistrict(criteria.district) : 'ALL');
         const fy = criteria.fy && criteria.fy !== 'ALL' ? criteria.fy : 'ALL';
         const district = criteria.district && criteria.district !== 'ALL' ? criteria.district : 'ALL';
         const constituency = criteria.constituency && criteria.constituency !== 'ALL' ? criteria.constituency : 'ALL';
@@ -300,7 +340,25 @@
             });
         }
 
-        // 2. Apply District Scaling
+        // 2. Apply State Scaling (Different states show distinctly different macro figures)
+        let stateFactor = 1.0;
+        if (state !== 'ALL') {
+            const cleanS = state.trim();
+            if (STATE_WEIGHTS[cleanS]) {
+                stateFactor = STATE_WEIGHTS[cleanS];
+            } else {
+                const hs = hashString(cleanS);
+                stateFactor = 0.45 + (hs % 15) * 0.04;
+            }
+            allocCr *= stateFactor;
+            relCr *= stateFactor;
+            expCr *= stateFactor;
+            worksCount = Math.round(worksCount * stateFactor);
+            alertsCount = Math.max(1, Math.round(alertsCount * stateFactor));
+            monthlyCurve = monthlyCurve.map(v => Math.round(v * stateFactor * 10) / 10);
+        }
+
+        // 3. Apply District Scaling
         let distFactor = 1.0;
         if (district !== 'ALL') {
             const cleanD = district.trim();
@@ -318,7 +376,7 @@
             monthlyCurve = monthlyCurve.map(v => Math.round(v * distFactor * 10) / 10);
         }
 
-        // 3. Apply Financial Year Scaling
+        // 4. Apply Financial Year Scaling
         let fyFactor = 1.0;
         if (fy !== 'ALL') {
             fyFactor = FY_WEIGHTS[fy] || 0.35;
@@ -469,13 +527,24 @@
             opts = criteria || {};
         }
 
+        const state = opts.state && opts.state !== 'ALL' ? opts.state : 
+            (opts.district && opts.district !== 'ALL' && typeof window !== 'undefined' && window.getStateForDistrict ? window.getStateForDistrict(opts.district) : 'ALL');
         const fy = opts.fy && opts.fy !== 'ALL' ? opts.fy : '2025-26';
-        const district = opts.district && opts.district !== 'ALL' ? opts.district : 'Varanasi';
-        const constituency = opts.constituency && opts.constituency !== 'ALL' ? opts.constituency : `${district} (PC-77)`;
+        let district = opts.district && opts.district !== 'ALL' ? opts.district : 'Varanasi';
+
+        // If a specific state is given but district is ALL or Varanasi, pick an authentic district from that state
+        if (state !== 'ALL' && (!opts.district || opts.district === 'ALL')) {
+            if (typeof window !== 'undefined' && window.INDIA_STATES_DISTRICTS && window.INDIA_STATES_DISTRICTS[state]) {
+                district = window.INDIA_STATES_DISTRICTS[state][0] || district;
+            }
+        }
+
+        const constituency = opts.constituency && opts.constituency !== 'ALL' ? opts.constituency : `${district} (PC-Central)`;
         const category = opts.category && opts.category !== 'ALL' ? opts.category : 'ALL';
         const status = opts.status && opts.status !== 'ALL' ? opts.status : 'ALL';
         const risk = opts.risk && opts.risk !== 'ALL' ? opts.risk : 'ALL';
 
+        const stateMult = state !== 'ALL' && STATE_WEIGHTS[state] ? STATE_WEIGHTS[state] : 1.0;
         const catsToGenerate = category !== 'ALL' ? [category] : CATEGORIES;
         const results = [];
 
@@ -499,10 +568,10 @@
                 const isComp = itemStatus === 'COMPLETED';
                 let compPct = isComp ? 100 : (itemStatus === 'ONGOING' ? Math.max(55, tmpl.comp) : (isDel ? Math.max(30, tmpl.comp) : 25));
 
-                // Dynamic district multiplier & deterministic variance so every district shows distinct amounts
-                const distMult = (DISTRICT_WEIGHTS[district] || 0.14) / 0.185;
-                const variance = ((hashString(district + catName + idx) % 15) - 7) * 0.8;
-                const baseCost = tmpl.cost * (0.80 + distMult * 0.32) + (idx * 5.2) + variance;
+                // Dynamic district & state multiplier with deterministic variance so every district & state shows distinct amounts
+                const distMult = (DISTRICT_WEIGHTS[district] || (0.10 + (hashString(district) % 10) * 0.01)) / 0.185;
+                const variance = ((hashString(district + catName + idx + state) % 15) - 7) * 0.8;
+                const baseCost = (tmpl.cost * stateMult) * (0.80 + distMult * 0.32) + (idx * 5.2) + variance;
                 const approved = Math.max(32.5, Math.round(baseCost * 10) / 10);
                 const released = isComp ? approved : Math.max(26.0, Math.round(approved * (0.84 + distMult * 0.05) * 10) / 10);
                 const spent = isComp ? released : Math.max(20.0, Math.round(released * (compPct / 100) * 10) / 10);
@@ -515,6 +584,7 @@
                     id: workId,
                     name: `${tmpl.title}, ${district}`,
                     district: district,
+                    state: state !== 'ALL' ? state : 'Uttar Pradesh',
                     constituency: constituency,
                     mp: `Hon. MP (${district})`,
                     financialYear: fy,
@@ -680,7 +750,19 @@
      * Guaranteed strictly non-zero (> 0) on every single metric and count.
      */
     function getDistrictMonitoringSummaries(criteria = {}) {
-        const districtList = Object.keys(DISTRICT_WEIGHTS);
+        const state = criteria.state && criteria.state !== 'ALL' ? criteria.state : 'ALL';
+        let districtList = Object.keys(DISTRICT_WEIGHTS);
+
+        // If a specific state is chosen, dynamically load its actual districts from INDIA_STATES_DISTRICTS
+        if (state !== 'ALL' && typeof window !== 'undefined' && window.INDIA_STATES_DISTRICTS && window.INDIA_STATES_DISTRICTS[state]) {
+            districtList = window.INDIA_STATES_DISTRICTS[state].slice(0, 10);
+        } else if (criteria.district && criteria.district !== 'ALL') {
+            const chosen = criteria.district.trim();
+            if (!districtList.includes(chosen)) {
+                districtList = [chosen, ...districtList];
+            }
+        }
+
         const fy = criteria.fy && criteria.fy !== 'ALL' ? criteria.fy : 'ALL';
         const category = criteria.category && criteria.category !== 'ALL' ? criteria.category : 'ALL';
         const status = criteria.status && criteria.status !== 'ALL' ? criteria.status : 'ALL';
@@ -688,7 +770,7 @@
 
         return districtList.map(districtName => {
             const meta = DISTRICT_METADATA[districtName] || {
-                nodalOfficer: "District Magistrate",
+                nodalOfficer: `District Magistrate (${districtName})`,
                 hq: `${districtName} Collectorate`,
                 constituency: `${districtName} (PC-General)`,
                 grade: "Grade A",
@@ -696,6 +778,7 @@
             };
 
             const dData = calculateDataForCombination({
+                state: state,
                 district: districtName,
                 fy: fy,
                 category: category,
@@ -712,6 +795,7 @@
 
             return {
                 district: districtName,
+                state: state !== 'ALL' ? state : (typeof window !== 'undefined' && window.getStateForDistrict ? window.getStateForDistrict(districtName) : 'Uttar Pradesh'),
                 nodalOfficer: meta.nodalOfficer,
                 hq: meta.hq,
                 constituency: meta.constituency,
@@ -779,6 +863,7 @@
     const MPLADS_DATA_ENGINE = {
         CATEGORIES,
         CATEGORY_PROFILES,
+        STATE_WEIGHTS,
         DISTRICT_WEIGHTS,
         DISTRICT_METADATA,
         FY_WEIGHTS,

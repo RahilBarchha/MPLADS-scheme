@@ -48,11 +48,40 @@ function initMonitoringEvents() {
     }
 
     // Direct change listeners on select dropdowns
-    ['monFilterFY', 'monFilterDistrict', 'monFilterConstituency', 'monFilterMP', 'monFilterCategory', 'monFilterStatus', 'monFilterRisk'].forEach(id => {
+    ['monFilterFY', 'monFilterState', 'monFilterDistrict', 'monFilterConstituency', 'monFilterMP', 'monFilterCategory', 'monFilterStatus', 'monFilterRisk'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('change', () => {
-                if (id === 'monFilterDistrict') {
+                if (id === 'monFilterState') {
+                    // Update district dropdown based on selected state
+                    const stateVal = el.value;
+                    const distSelect = document.getElementById('monFilterDistrict');
+                    if (distSelect) {
+                        distSelect.innerHTML = '<option value="ALL">All Districts</option>';
+                        if (stateVal !== 'ALL' && window.INDIA_STATES_DISTRICTS && window.INDIA_STATES_DISTRICTS[stateVal]) {
+                            window.INDIA_STATES_DISTRICTS[stateVal].forEach(d => {
+                                const opt = document.createElement('option');
+                                opt.value = d;
+                                opt.textContent = d;
+                                distSelect.appendChild(opt);
+                            });
+                        } else if (stateVal === 'ALL' && window.INDIA_STATES_DISTRICTS) {
+                            // Populate with default major districts
+                            const defaultDists = ["Varanasi", "Gorakhpur", "Prayagraj", "Lucknow", "Ayodhya", "Kanpur Nagar", "Mirzapur", "Jaunpur", "Patna", "Gaya", "Mumbai City", "Pune", "Ahmedabad", "Surat", "Jaipur", "Bhopal", "Indore", "Kolkata", "Chennai", "Bengaluru Urban"];
+                            defaultDists.forEach(d => {
+                                const opt = document.createElement('option');
+                                opt.value = d;
+                                opt.textContent = d;
+                                distSelect.appendChild(opt);
+                            });
+                        }
+                        distSelect.value = 'ALL';
+                    }
+                    const constEl = document.getElementById('monFilterConstituency');
+                    if (constEl) constEl.value = 'ALL';
+                    const mpEl = document.getElementById('monFilterMP');
+                    if (mpEl) mpEl.value = 'ALL';
+                } else if (id === 'monFilterDistrict') {
                     // Reset constituency and MP to ALL so selecting a district never causes 0 results
                     const constEl = document.getElementById('monFilterConstituency');
                     if (constEl) constEl.value = 'ALL';
@@ -69,6 +98,7 @@ function initMonitoringEvents() {
         resetBtn.addEventListener('click', () => {
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
             setVal('monFilterFY', 'ALL');
+            setVal('monFilterState', 'ALL');
             setVal('monFilterDistrict', 'ALL');
             setVal('monFilterConstituency', 'ALL');
             setVal('monFilterMP', 'ALL');
@@ -89,6 +119,7 @@ function initMonitoringEvents() {
 function getActiveMonitoringCriteria() {
     return {
         fy: document.getElementById('monFilterFY')?.value || 'ALL',
+        state: document.getElementById('monFilterState')?.value || 'ALL',
         district: document.getElementById('monFilterDistrict')?.value || 'ALL',
         constituency: document.getElementById('monFilterConstituency')?.value || 'ALL',
         mp: document.getElementById('monFilterMP')?.value || 'ALL',
@@ -152,15 +183,18 @@ function renderDistrictMonitoringKPIs(criteria = null) {
             totalAlerts += s.alertsCount;
         });
 
-        // Strictly non-zero baseline guarantee for macro aggregate
-        totalWorks = Math.max(totalWorks, 124);
-        completedWorks = Math.max(completedWorks, 84);
-        ongoingWorks = Math.max(ongoingWorks, 28);
-        delayedWorks = Math.max(delayedWorks, 12);
-        totalAlloc = Math.max(totalAlloc, 380.00);
+        // Dynamic non-zero baseline scaled by state
+        const stateFactor = (crit.state && crit.state !== 'ALL' && window.MPLADS_DATA_ENGINE?.STATE_WEIGHTS?.[crit.state]) ? 
+            window.MPLADS_DATA_ENGINE.STATE_WEIGHTS[crit.state] : 1.0;
+
+        totalWorks = Math.max(totalWorks, Math.round(110 * stateFactor));
+        completedWorks = Math.max(completedWorks, Math.round(72 * stateFactor));
+        ongoingWorks = Math.max(ongoingWorks, Math.round(26 * stateFactor));
+        delayedWorks = Math.max(delayedWorks, Math.round(12 * stateFactor));
+        totalAlloc = Math.max(totalAlloc, Math.round(340.00 * stateFactor * 10) / 10);
         totalRel = Math.max(totalRel, Math.round(totalAlloc * 0.88 * 10) / 10);
         totalExp = Math.max(totalExp, Math.round(totalRel * 0.82 * 10) / 10);
-        totalAlerts = Math.max(totalAlerts, 12);
+        totalAlerts = Math.max(totalAlerts, Math.round(10 * stateFactor));
     }
 
     // Safety checks ensuring numbers are strictly > 0
@@ -170,7 +204,8 @@ function renderDistrictMonitoringKPIs(criteria = null) {
     const unspent = Math.max(0.10, Math.round((totalRel - totalExp) * 100) / 100);
     const avgUtil = totalAlloc > 0 ? Math.round((totalExp / totalAlloc) * 1000) / 10 : 86.4;
 
-    if (countEl) countEl.textContent = crit.district !== 'ALL' ? `${crit.district} (Focused)` : `8 Districts (100%)`;
+    const statePrefix = crit.state && crit.state !== 'ALL' ? `${crit.state}: ` : '';
+    if (countEl) countEl.textContent = crit.district !== 'ALL' ? `${crit.district} (Focused)` : `${statePrefix}${activeSummaries.length} Districts`;
     if (totalWorksEl) totalWorksEl.textContent = `${totalWorks} Works`;
     if (worksBreakdownEl) worksBreakdownEl.textContent = `${completedWorks} Done • ${ongoingWorks} Active • ${delayedWorks} Delayed`;
     if (allocEl) allocEl.textContent = `₹${totalAlloc.toFixed(2)} Cr`;
@@ -222,14 +257,24 @@ function renderDistrictMonitoringTable(criteria = null) {
 
     const badgeEl = document.getElementById('districtTableScopeBadge');
     if (badgeEl) {
-        badgeEl.textContent = selectedDistrict ? `Focused District: ${crit.district}` : `All 8 Administrative Districts`;
+        if (selectedDistrict) {
+            badgeEl.textContent = `Focused District: ${crit.district}`;
+        } else if (crit.state && crit.state !== 'ALL') {
+            badgeEl.textContent = `Monitored Districts: ${crit.state} (${filteredSummaries.length} Districts)`;
+        } else {
+            badgeEl.textContent = `All Monitored Districts (${filteredSummaries.length})`;
+        }
     }
 
     const summaryTextEl = document.getElementById('districtTableSummaryText');
     if (summaryTextEl) {
-        summaryTextEl.textContent = selectedDistrict ?
-            `Showing scorecard for ${crit.district} • All numbers strictly > 0 • Click "Show All Districts" to reset.` :
-            `Showing all 8 monitored districts • Click "🔍 Inspect Works" on any district to inspect its individual schemes below.`;
+        if (selectedDistrict) {
+            summaryTextEl.textContent = `Showing scorecard for ${crit.district} • All numbers strictly > 0 • Click "Show All Districts" to reset.`;
+        } else if (crit.state && crit.state !== 'ALL') {
+            summaryTextEl.textContent = `Showing all administrative districts for ${crit.state} • All numbers strictly > 0 • Click "🔍 Inspect Works" on any district to inspect below.`;
+        } else {
+            summaryTextEl.textContent = `Showing monitored administrative districts • Click "🔍 Inspect Works" on any district to inspect its individual schemes below.`;
+        }
     }
 
     tbody.innerHTML = filteredSummaries.map(d => {
@@ -394,6 +439,7 @@ function applyMonitoringFilters() {
     const rawWorks = window.MPLADS_DEMO_DATA?.works || [];
     const search = document.getElementById('monitoringSearchInput')?.value.toLowerCase().trim() || '';
     const fy = document.getElementById('monFilterFY')?.value || 'ALL';
+    const state = document.getElementById('monFilterState')?.value || 'ALL';
     const district = document.getElementById('monFilterDistrict')?.value || 'ALL';
     const constituency = document.getElementById('monFilterConstituency')?.value || 'ALL';
     const mp = document.getElementById('monFilterMP')?.value || 'ALL';
@@ -401,18 +447,19 @@ function applyMonitoringFilters() {
     const status = document.getElementById('monFilterStatus')?.value || 'ALL';
     const risk = document.getElementById('monFilterRisk')?.value || 'ALL';
 
-    const criteria = { fy, district, constituency, mp, category, status, risk };
+    const criteria = { fy, state, district, constituency, mp, category, status, risk };
 
     // Update macro district table and KPIs
     renderDistrictMonitoringKPIs(criteria);
     renderDistrictMonitoringTable(criteria);
 
-    // When a specific district or category is selected, generate district-specific works
-    // with distinct amounts scaled specifically to that district and category
-    if ((district !== 'ALL' || category !== 'ALL') && window.MPLADS_DATA_ENGINE) {
+    // When a specific district, state, or category is selected, generate works
+    // with distinct amounts scaled specifically to that state, district, and category
+    if ((district !== 'ALL' || state !== 'ALL' || category !== 'ALL') && window.MPLADS_DATA_ENGINE) {
         let generated = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
             category: category,
-            district: district !== 'ALL' ? district : 'Varanasi',
+            state: state,
+            district: district !== 'ALL' ? district : (state !== 'ALL' && window.INDIA_STATES_DISTRICTS && window.INDIA_STATES_DISTRICTS[state] ? window.INDIA_STATES_DISTRICTS[state][0] : 'Varanasi'),
             fy: fy !== 'ALL' ? fy : '2025-26',
             status: status !== 'ALL' ? status : 'ALL',
             risk: risk !== 'ALL' ? risk : 'ALL'
