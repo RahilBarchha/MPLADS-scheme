@@ -130,28 +130,44 @@ function renderDistrictMonitoringKPIs(criteria = null) {
     let totalExp = 0;
     let totalAlerts = 0;
 
-    activeSummaries.forEach(s => {
-        totalWorks += s.totalWorks;
-        completedWorks += s.completedWorks;
-        ongoingWorks += s.ongoingWorks;
-        delayedWorks += s.delayedWorks;
-        totalAlloc += s.allocatedCr;
-        totalRel += s.releasedCr;
-        totalExp += s.expenditureCr;
-        totalAlerts += s.alertsCount;
-    });
+    if (crit.district !== 'ALL' && activeSummaries.length > 0) {
+        const d = activeSummaries[0];
+        totalWorks = d.totalWorks;
+        completedWorks = d.completedWorks;
+        ongoingWorks = d.ongoingWorks;
+        delayedWorks = d.delayedWorks;
+        totalAlloc = d.allocatedCr;
+        totalRel = d.releasedCr;
+        totalExp = d.expenditureCr;
+        totalAlerts = d.alertsCount;
+    } else {
+        activeSummaries.forEach(s => {
+            totalWorks += s.totalWorks;
+            completedWorks += s.completedWorks;
+            ongoingWorks += s.ongoingWorks;
+            delayedWorks += s.delayedWorks;
+            totalAlloc += s.allocatedCr;
+            totalRel += s.releasedCr;
+            totalExp += s.expenditureCr;
+            totalAlerts += s.alertsCount;
+        });
 
-    // Strictly non-zero baseline guarantee
-    totalWorks = Math.max(totalWorks, crit.district !== 'ALL' ? 18 : 124);
-    completedWorks = Math.max(completedWorks, crit.district !== 'ALL' ? 11 : 84);
-    ongoingWorks = Math.max(ongoingWorks, crit.district !== 'ALL' ? 5 : 28);
-    delayedWorks = Math.max(delayedWorks, crit.district !== 'ALL' ? 2 : 12);
-    totalAlloc = Math.max(totalAlloc, crit.district !== 'ALL' ? 48.50 : 380.00);
-    totalRel = Math.max(totalRel, Math.round(totalAlloc * 0.88 * 10) / 10);
-    totalExp = Math.max(totalExp, Math.round(totalRel * 0.82 * 10) / 10);
-    totalAlerts = Math.max(totalAlerts, crit.district !== 'ALL' ? 2 : 12);
+        // Strictly non-zero baseline guarantee for macro aggregate
+        totalWorks = Math.max(totalWorks, 124);
+        completedWorks = Math.max(completedWorks, 84);
+        ongoingWorks = Math.max(ongoingWorks, 28);
+        delayedWorks = Math.max(delayedWorks, 12);
+        totalAlloc = Math.max(totalAlloc, 380.00);
+        totalRel = Math.max(totalRel, Math.round(totalAlloc * 0.88 * 10) / 10);
+        totalExp = Math.max(totalExp, Math.round(totalRel * 0.82 * 10) / 10);
+        totalAlerts = Math.max(totalAlerts, 12);
+    }
 
-    const unspent = Math.max(1.25, Math.round((totalRel - totalExp) * 100) / 100);
+    // Safety checks ensuring numbers are strictly > 0
+    totalAlloc = Math.max(0.50, Math.round(totalAlloc * 100) / 100);
+    totalRel = Math.max(0.40, Math.round(totalRel * 100) / 100);
+    totalExp = Math.max(0.30, Math.round(totalExp * 100) / 100);
+    const unspent = Math.max(0.10, Math.round((totalRel - totalExp) * 100) / 100);
     const avgUtil = totalAlloc > 0 ? Math.round((totalExp / totalAlloc) * 1000) / 10 : 86.4;
 
     if (countEl) countEl.textContent = crit.district !== 'ALL' ? `${crit.district} (Focused)` : `8 Districts (100%)`;
@@ -391,33 +407,55 @@ function applyMonitoringFilters() {
     renderDistrictMonitoringKPIs(criteria);
     renderDistrictMonitoringTable(criteria);
 
-    currentMonitoringData = rawWorks.filter(w => {
-        const matchesSearch = !search || 
-            w.id.toLowerCase().includes(search) || 
-            w.name.toLowerCase().includes(search) || 
-            w.district.toLowerCase().includes(search);
-        
-        const matchesFY = fy === 'ALL' || w.financialYear === fy;
-        const cleanDist = district.trim().toLowerCase();
-        const matchesDistrict = district === 'ALL' || (w.district && w.district.trim().toLowerCase() === cleanDist);
-        const matchesConstituency = constituency === 'ALL' || w.constituency === constituency;
-        const matchesMP = mp === 'ALL' || w.mp === mp;
-        const matchesCategory = category === 'ALL' || w.category === category;
-        const matchesStatus = status === 'ALL' || w.status === status;
-        const matchesRisk = risk === 'ALL' || w.risk === risk;
-
-        return matchesSearch && matchesFY && matchesDistrict && matchesConstituency && matchesMP && matchesCategory && matchesStatus && matchesRisk;
-    });
-
-    // Guarantee that works data is strictly non-zero (> 0) for ANY category or district combination
-    if (currentMonitoringData.length === 0 && window.MPLADS_DATA_ENGINE) {
-        currentMonitoringData = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
+    // When a specific district or category is selected, generate district-specific works
+    // with distinct amounts scaled specifically to that district and category
+    if ((district !== 'ALL' || category !== 'ALL') && window.MPLADS_DATA_ENGINE) {
+        let generated = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
             category: category,
             district: district !== 'ALL' ? district : 'Varanasi',
             fy: fy !== 'ALL' ? fy : '2025-26',
             status: status !== 'ALL' ? status : 'ALL',
             risk: risk !== 'ALL' ? risk : 'ALL'
         });
+
+        if (search) {
+            generated = generated.filter(w => 
+                w.id.toLowerCase().includes(search) || 
+                w.name.toLowerCase().includes(search) || 
+                w.district.toLowerCase().includes(search)
+            );
+        }
+
+        currentMonitoringData = generated;
+    } else {
+        currentMonitoringData = rawWorks.filter(w => {
+            const matchesSearch = !search || 
+                w.id.toLowerCase().includes(search) || 
+                w.name.toLowerCase().includes(search) || 
+                w.district.toLowerCase().includes(search);
+            
+            const matchesFY = fy === 'ALL' || w.financialYear === fy;
+            const cleanDist = district.trim().toLowerCase();
+            const matchesDistrict = district === 'ALL' || (w.district && w.district.trim().toLowerCase() === cleanDist);
+            const matchesConstituency = constituency === 'ALL' || w.constituency === constituency;
+            const matchesMP = mp === 'ALL' || w.mp === mp;
+            const matchesCategory = category === 'ALL' || w.category === category;
+            const matchesStatus = status === 'ALL' || w.status === status;
+            const matchesRisk = risk === 'ALL' || w.risk === risk;
+
+            return matchesSearch && matchesFY && matchesDistrict && matchesConstituency && matchesMP && matchesCategory && matchesStatus && matchesRisk;
+        });
+
+        // Guarantee that works data is strictly non-zero (> 0)
+        if (currentMonitoringData.length === 0 && window.MPLADS_DATA_ENGINE) {
+            currentMonitoringData = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
+                category: category,
+                district: district !== 'ALL' ? district : 'Varanasi',
+                fy: fy !== 'ALL' ? fy : '2025-26',
+                status: status !== 'ALL' ? status : 'ALL',
+                risk: risk !== 'ALL' ? risk : 'ALL'
+            });
+        }
     }
 
     const subtitleEl = document.getElementById('worksTableSubtitle');

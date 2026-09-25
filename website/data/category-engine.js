@@ -498,9 +498,14 @@
                 const isDel = itemStatus === 'DELAYED';
                 const isComp = itemStatus === 'COMPLETED';
                 let compPct = isComp ? 100 : (itemStatus === 'ONGOING' ? Math.max(55, tmpl.comp) : (isDel ? Math.max(30, tmpl.comp) : 25));
-                const approved = Math.max(28.0, Math.round((tmpl.cost + (idx * 6.5) - 3.0) * 10) / 10);
-                const released = isComp ? approved : Math.max(22.0, Math.round(approved * 0.88 * 10) / 10);
-                const spent = isComp ? released : Math.max(16.0, Math.round(released * (compPct / 100) * 10) / 10);
+
+                // Dynamic district multiplier & deterministic variance so every district shows distinct amounts
+                const distMult = (DISTRICT_WEIGHTS[district] || 0.14) / 0.185;
+                const variance = ((hashString(district + catName + idx) % 15) - 7) * 0.8;
+                const baseCost = tmpl.cost * (0.80 + distMult * 0.32) + (idx * 5.2) + variance;
+                const approved = Math.max(32.5, Math.round(baseCost * 10) / 10);
+                const released = isComp ? approved : Math.max(26.0, Math.round(approved * (0.84 + distMult * 0.05) * 10) / 10);
+                const spent = isComp ? released : Math.max(20.0, Math.round(released * (compPct / 100) * 10) / 10);
                 const delayDays = isDel ? (tmpl.days || (75 + idx * 15)) : 0;
                 const agency = prof.agencies[idx % prof.agencies.length] + ` (${district})`;
 
