@@ -1401,10 +1401,33 @@ const MPLADS_API = (function () {
             };
         }
 
-        // 3. Reject any unregistered access attempts (Strict process: Register First)
+        // 3. Demo Officers fallback (permits instant demo login for standard officers like dm.varanasi@nic.in)
+        const demoOfficers = window.MPLADS_DEMO_DATA?.officers || [];
+        const demoOfficer = demoOfficers.find(o => 
+            o && ((o.email && o.email.toLowerCase() === q) || (o.id && o.id.toLowerCase() === q)) && o.status === 'ACTIVE'
+        );
+
+        if (demoOfficer) {
+            if (p.length < 4) {
+                return {
+                    success: false,
+                    message: "Password must be at least 4 characters."
+                };
+            }
+            const token = 'DEMO-AUTH-' + Date.now();
+            saveUserSession(demoOfficer, token);
+            return {
+                success: true,
+                message: `Welcome back, ${demoOfficer.name}. Demo authentication verified.`,
+                token,
+                user: demoOfficer
+            };
+        }
+
+        // 4. Reject any unregistered access attempts
         return {
             success: false,
-            message: `Account not found for '${email}'. You must register your official cadre profile first via the 'New Officer Induction' tab before signing in.`
+            message: `Account not found for '${email}'. You can sign in using demo email 'dm.varanasi@nic.in' (password: admin123) or register via 'New Officer Induction' tab.`
         };
     }
 
