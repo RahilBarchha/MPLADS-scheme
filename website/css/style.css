@@ -1,0 +1,627 @@
+@import url('ai-copilot.css?v=3.3');
+
+/* ==============================================================================
+   MPLADS Monitoring & Analytics Platform - Core Styles & Design Tokens
+   Public Sector / Government Enterprise Grade Design System
+   ============================================================================== */
+
+:root {
+    /* Brand & Theme Colors */
+    --primary-900: #0a1f38;
+    --primary-800: #0e2a4d;
+    --primary-700: #133c55;
+    --primary-600: #19527a;
+    --primary-500: #1f6b9c;
+    --primary-100: #e3effa;
+    --primary-50:  #f0f7fd;
+
+    /* Saffron / Gold Accents */
+    --accent-saffron: #f97316;
+    --accent-gold: #f59e0b;
+    --accent-gold-light: #fef3c7;
+
+    /* Functional Semantic Colors */
+    --success-700: #065f46;
+    --success-500: #10b981;
+    --success-100: #d1fae5;
+    --success-50:  #ecfdf5;
+
+    --warning-700: #b45309;
+    --warning-500: #f59e0b;
+    --warning-100: #fef3c7;
+
+    --danger-700: #991b1b;
+    --danger-500: #ef4444;
+    --danger-100: #fee2e2;
+    --danger-50:  #fef2f2;
+
+    --info-700: #1d4ed8;
+    --info-500: #3b82f6;
+    --info-100: #dbeafe;
+
+    /* Neutral & Background Tones */
+    --bg-main: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-raised: #f1f5f9;
+    --bg-surface-subtle: #f8fafc;
+    --border-color: #e2e8f0;
+    --border-strong: #cbd5e1;
+
+    /* Text Colors */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+
+    /* Spacing Scale */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    /* Typography */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Shadows & Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Layout Dimensions */
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 72px;
+    --header-height: 70px;
+}
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: var(--font-sans);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--primary-600);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-800);
+}
+
+/* Master App Layout Shell */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Government Tricolor Brand Stripe */
+.gov-tricolor-stripe {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* ==============================================================================
+   SIDEBAR COMPONENT
+   ============================================================================== */
+.app-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--primary-900);
+    color: var(--text-inverse);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 4px;
+    left: 0;
+    bottom: 0;
+    z-index: 900;
+    transition: width var(--transition-normal);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-header {
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: var(--header-height);
+}
+
+.national-emblem-badge {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ff9933;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    padding: var(--space-2) var(--space-3);
+    letter-spacing: 0.8px;
+    margin-top: var(--space-2);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    color: #cbd5e1;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.nav-item.active {
+    background-color: var(--primary-600);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(25, 82, 122, 0.4);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    background: #ff9933;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-icon {
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.nav-badge {
+    margin-left: auto;
+    background: var(--danger-500);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+}
+
+.sidebar-footer {
+    padding: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.portal-version {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ==============================================================================
+   MAIN CONTENT AREA & HEADER
+   ============================================================================== */
+.app-main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-top: 4px;
+    transition: margin-left var(--transition-normal);
+}
+
+.app-header {
+    min-height: var(--header-height);
+    height: auto;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px var(--space-8);
+    position: sticky;
+    top: 4px;
+    z-index: 800;
+    box-shadow: var(--shadow-sm);
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.page-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--primary-900);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.3;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Universal Text Baseline & Emoji Vertical Stabilization to prevent text jumping */
+.page-title span,
+.card-title span,
+.modal-title span,
+.nav-item span,
+.btn span,
+.badge span,
+.kpi-title span,
+.kpi-trend span,
+.filter-item span,
+.user-info span {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-600);
+}
+
+.breadcrumb-separator {
+    color: var(--border-strong);
+    display: inline-flex;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.header-search {
+    position: relative;
+    width: 280px;
+}
+
+.header-search input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface-raised);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.header-search input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(31, 107, 156, 0.15);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.icon-button {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.icon-button:hover {
+    background: var(--bg-surface-raised);
+    color: var(--text-primary);
+}
+
+.badge-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--danger-500);
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 4px 8px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    border-left: 1px solid var(--border-color);
+    margin-left: var(--space-2);
+}
+
+.user-profile:hover {
+    background-color: var(--bg-surface-raised);
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    border: 2px solid var(--primary-100);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    line-height: 1.25;
+}
+
+.user-role {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* ==============================================================================
+   PAGE CONTENT WRAPPER
+   ============================================================================== */
+.page-content {
+    padding: var(--space-6) var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    flex: 1;
+}
+
+/* Notice Banner */
+.gov-banner-demo {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: #92400e;
+}
+
+/* ==============================================================================
+   PRINT MEDIA STYLES - Official Financial Reports
+   ============================================================================== */
+.print-only-header {
+    display: none;
+}
+
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+    }
+
+    .gov-tricolor-stripe,
+    .app-sidebar,
+    .app-header .header-right,
+    .breadcrumb,
+    .filter-bar,
+    .header-actions,
+    .pagination-container,
+    .modal-overlay,
+    .btn,
+    button {
+        display: none !important;
+    }
+
+    .app-container {
+        display: block !important;
+    }
+
+    .app-main {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .app-header {
+        border-bottom: 2px solid #0a1f38 !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .page-content {
+        padding: 0 !important;
+        gap: 16px !important;
+    }
+
+    .gov-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        break-inside: avoid;
+        margin-bottom: 16px !important;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 10px !important;
+        break-inside: avoid;
+    }
+
+    .kpi-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 10px !important;
+    }
+
+    .dashboard-grid-2col {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        break-inside: avoid;
+    }
+
+    .chart-container-tall {
+        height: 220px !important;
+    }
+
+    .gov-table th, .gov-table td {
+        padding: 6px 8px !important;
+        font-size: 8.5pt !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .print-only-header {
+        display: block !important;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #0f172a;
+    }
+
+    .print-only-header h2 {
+        font-size: 16pt;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .print-only-header .print-meta {
+        font-size: 8.5pt;
+        color: #475569;
+        display: flex;
+        justify-content: space-between;
+    }
+}
+

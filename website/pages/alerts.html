@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts & Early Warnings | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="../assets/chart.umd.min.js"></script>
+
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css?v=4.5">
+    <link rel="stylesheet" href="../css/components.css?v=4.5">
+    <link rel="stylesheet" href="../css/dashboard.css?v=4.5">
+    <link rel="stylesheet" href="../css/ai-copilot.css?v=4.5">
+    <link rel="stylesheet" href="../css/responsive.css?v=4.5">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar" aria-label="Main Navigation">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item active" aria-current="page">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge" id="alertsPageCountBadge">12</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">🚨 System Intelligence & Early Warnings</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Anomaly Detection & Audits</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="exportAlertsCSV()" id="exportAlertsBtn">📥 Export CSV</button>
+                    </div>
+
+                    <div class="user-profile" role="button" tabindex="0" title="Click to manage Officer Profile & Perspective">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Dr. R. K. Sharma, IAS</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Neutral Governance Advisory Banner -->
+                <div class="gov-banner-demo" style="background:#f0f7ff;border:1px solid #bfdbfe;border-left:4px solid #3b82f6;color:#1e40af;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.1rem;">ℹ️</span>
+                        <div>
+                            <strong>Early Warning Monitoring Framework:</strong> Anomaly flags and risk scores are statistical monitoring indicators calculated to assist administrative verification. They do not constitute conclusive proof of wrongdoing.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8 Alert KPI Summary Cards (Requirement 1) -->
+                <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+                    <!-- Total Alerts -->
+                    <div class="kpi-card accent-primary" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Total Alerts</span>
+                        <div class="kpi-value" style="font-size:1.4rem;" id="altKpiTotal">0</div>
+                        <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px;">All Detected</div>
+                    </div>
+
+                    <!-- Critical -->
+                    <div class="kpi-card accent-danger" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Critical</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--danger-700);" id="altKpiCritical">0</div>
+                        <div style="font-size:0.68rem;color:var(--danger-700);margin-top:2px;font-weight:600;">Score > 75</div>
+                    </div>
+
+                    <!-- High -->
+                    <div class="kpi-card accent-saffron" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">High</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--accent-saffron);" id="altKpiHigh">0</div>
+                        <div style="font-size:0.68rem;color:var(--accent-saffron);margin-top:2px;font-weight:600;">Score 51–75</div>
+                    </div>
+
+                    <!-- Medium -->
+                    <div class="kpi-card accent-warning" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Medium</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--warning-700);" id="altKpiMedium">0</div>
+                        <div style="font-size:0.68rem;color:var(--warning-700);margin-top:2px;font-weight:600;">Score 26–50</div>
+                    </div>
+
+                    <!-- Low -->
+                    <div class="kpi-card accent-success" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Low</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--success-700);" id="altKpiLow">0</div>
+                        <div style="font-size:0.68rem;color:var(--success-700);margin-top:2px;font-weight:600;">Score 0–25</div>
+                    </div>
+
+                    <!-- Open -->
+                    <div class="kpi-card accent-danger" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Open</span>
+                        <div class="kpi-value" style="font-size:1.4rem;" id="altKpiOpen">0</div>
+                        <div style="font-size:0.68rem;color:var(--danger-700);margin-top:2px;">Awaiting Review</div>
+                    </div>
+
+                    <!-- Under Review -->
+                    <div class="kpi-card accent-warning" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Under Review</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--warning-700);" id="altKpiReview">0</div>
+                        <div style="font-size:0.68rem;color:var(--warning-700);margin-top:2px;">Assigned / Active</div>
+                    </div>
+
+                    <!-- Resolved -->
+                    <div class="kpi-card accent-success" style="padding:14px;">
+                        <span class="kpi-title" style="font-size:0.7rem;">Resolved</span>
+                        <div class="kpi-value" style="font-size:1.4rem;color:var(--success-700);" id="altKpiResolved">0</div>
+                        <div style="font-size:0.68rem;color:var(--success-700);margin-top:2px;">Audited & Closed</div>
+                    </div>
+                </section>
+
+                <!-- 4 Anomaly Dashboard Charts (Requirement 15) -->
+                <section class="dashboard-grid-2col">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Alerts by Risk Severity</h2>
+                                <p class="card-subtitle">Portfolio distribution by anomaly criticality rating</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:260px;">
+                                <canvas id="alertSeverityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Alerts by Anomaly Typology</h2>
+                                <p class="card-subtitle">Frequency count across 8 detection categories</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:260px;">
+                                <canvas id="alertTypeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-grid-2col">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Alerts by Operational Lifecycle Status</h2>
+                                <p class="card-subtitle">Current triage progress: Open, Under Review, Resolved, Dismissed</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:260px;">
+                                <canvas id="alertStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Anomaly Detection Velocity Over Time</h2>
+                                <p class="card-subtitle">Weekly trend of automated telemetry triggers</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:260px;">
+                                <canvas id="alertTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Search & Multi-Filter Controls (Requirement 4 & 5) -->
+                <section class="filter-bar" style="flex-wrap:wrap;gap:10px;">
+                    <!-- Text Search -->
+                    <div class="filter-item" style="flex: 2; min-width: 240px;">
+                        <label for="alertsSearchInput" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Search Alerts</label>
+                        <input type="text" id="alertsSearchInput" class="form-input" placeholder="🔍 Search Alert ID, Work ID, Title, District, Description...">
+                    </div>
+
+                    <!-- Severity Filter -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <label for="alertsFilterSeverity" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Severity</label>
+                        <select id="alertsFilterSeverity" class="form-select">
+                            <option value="ALL">All Severities</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="LOW">LOW</option>
+                        </select>
+                    </div>
+
+                    <!-- Anomaly Type Filter (8 Types) -->
+                    <div class="filter-item" style="flex: 1.4; min-width: 180px;">
+                        <label for="alertsFilterType" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Anomaly Type</label>
+                        <select id="alertsFilterType" class="form-select">
+                            <option value="ALL">All Anomaly Types</option>
+                            <option value="Unusual Expenditure">Unusual Expenditure</option>
+                            <option value="Delayed Project">Delayed Project</option>
+                            <option value="Fund Utilization Anomaly">Fund Utilization Anomaly</option>
+                            <option value="Cost Anomaly">Cost Anomaly</option>
+                            <option value="Possible Duplicate Work">Possible Duplicate Work</option>
+                            <option value="Missing Milestone">Missing Milestone</option>
+                            <option value="Contractor Concentration">Contractor Concentration</option>
+                            <option value="Geographic Anomaly">Geographic Anomaly</option>
+                        </select>
+                    </div>
+
+                    <!-- District Filter -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <label for="alertsFilterDistrict" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">District</label>
+                        <select id="alertsFilterDistrict" class="form-select">
+                            <option value="ALL">All Districts</option>
+                            <option value="Varanasi">Varanasi</option>
+                            <option value="Gorakhpur">Gorakhpur</option>
+                            <option value="Prayagraj">Prayagraj</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Ayodhya">Ayodhya</option>
+                            <option value="Kanpur Nagar">Kanpur Nagar</option>
+                            <option value="Mirzapur">Mirzapur</option>
+                            <option value="Jaunpur">Jaunpur</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <label for="alertsFilterStatus" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Status</label>
+                        <select id="alertsFilterStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="OPEN">Open</option>
+                            <option value="UNDER_REVIEW">Under Review</option>
+                            <option value="RESOLVED">Resolved</option>
+                            <option value="DISMISSED">Dismissed</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="filter-item" style="display:flex;align-items:center;gap:6px;min-width:240px;">
+                        <input type="date" id="alertsFilterDateFrom" class="form-input" style="padding:6px 8px;font-size:0.8rem;" title="From Date" aria-label="Detected From Date">
+                        <span style="font-size:0.75rem;color:var(--text-muted);">to</span>
+                        <input type="date" id="alertsFilterDateTo" class="form-input" style="padding:6px 8px;font-size:0.8rem;" title="To Date" aria-label="Detected To Date">
+                    </div>
+
+                    <!-- Filter Action Buttons -->
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-primary btn-sm" id="alertsApplyBtn">Apply</button>
+                        <button class="btn btn-secondary btn-sm" id="alertsResetBtn">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Dedicated AI Duplicate Works & Split Tender Inspector -->
+                <div class="gov-card" style="margin-bottom: 20px; border-left: 4px solid #0284c7;">
+                    <div class="card-header" style="background: #f8fafc;">
+                        <div>
+                            <h3 class="card-title" style="color: #0369a1;">
+                                <span>🔍</span> AI Duplicate Work & Split Tender Inspector (MoSPI Rule 4.2 / Geo-Engine)
+                            </h3>
+                            <div class="card-subtitle">
+                                Automated NLP string-similarity & Haversine GPS clustering identifying duplicate asset sanctioning across panchayats
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="btnScanDuplicates" onclick="loadDuplicateInspector()" style="background: linear-gradient(135deg, #0284c7, #0369a1); border:none;">
+                            ⚡ Run Duplicate Cluster Scan
+                        </button>
+                    </div>
+                    <div class="card-body" id="duplicateInspectorContainer" style="display:none; padding: 16px;">
+                        <div id="duplicateCardsList" style="display:flex; flex-direction:column; gap:12px;"></div>
+                    </div>
+                </div>
+
+                <!-- Alerts Table Card (Requirement 3, 6, 7) -->
+                <div class="gov-card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h2 class="card-title">Early Warning Intelligence Log</h2>
+                            <p class="card-subtitle">Automated statistical anomalies and operational telemetry flagged for review</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+                                <label for="alertsRowsPerPage">Rows per page:</label>
+                                <select id="alertsRowsPerPage" class="form-select" style="padding:4px 8px;font-size:0.8rem;width:auto;">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="ALL">All Alerts</option>
+                                </select>
+                            </div>
+                            <span class="badge badge-info" id="alertsCountBadge">0 Alerts Shown</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table" id="alertsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="sortAlerts('id')">
+                                            Alert ID <span class="sort-indicator" id="sort-icon-id">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortAlerts('type')">
+                                            Anomaly Type <span class="sort-indicator" id="sort-icon-type">↕</span>
+                                        </th>
+                                        <th>Target Work</th>
+                                        <th class="sortable" onclick="sortAlerts('district')">
+                                            District <span class="sort-indicator" id="sort-icon-district">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortAlerts('severity')">
+                                            Severity <span class="sort-indicator" id="sort-icon-severity">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortAlerts('riskScore')">
+                                            Risk Score <span class="sort-indicator" id="sort-icon-riskScore">↕</span>
+                                        </th>
+                                        <th>Description</th>
+                                        <th class="sortable" onclick="sortAlerts('detectedDate')">
+                                            Detected <span class="sort-indicator" id="sort-icon-detectedDate">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortAlerts('status')">
+                                            Status <span class="sort-indicator" id="sort-icon-status">↕</span>
+                                        </th>
+                                        <th>Assigned To</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alertsTableBody">
+                                    <!-- Populated dynamically by alerts.js -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Footer -->
+                        <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid var(--border-color);">
+                            <span class="pagination-info" id="alertsPaginationInfo" style="font-size: 0.85rem; color: var(--text-secondary);">Showing 0 of 0 alerts</span>
+                            <div class="pagination-controls" id="alertsPaginationControls" style="display: flex; gap: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Alert Details Modal (Requirement 8 & 12 & 13) -->
+    <div class="modal-overlay" id="alertDetailsModal" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title" id="alertModalTitle">Anomaly Flag Inspection Telemetry</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Statistical Telemetry & Verification Dossier</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeModal('alertDetailsModal')" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body" id="alertDetailsModalBody">
+                <!-- Populated dynamically by alerts.js -->
+            </div>
+            <div class="modal-footer" style="display:flex;justify-content:space-between;">
+                <div id="alertDetailsFooterActions" style="display:flex;gap:6px;"></div>
+                <button class="btn btn-secondary" onclick="closeModal('alertDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Alert Modal (Requirement 10) -->
+    <div class="modal-overlay" id="assignAlertModal" role="dialog" aria-modal="true" aria-labelledby="assignModalTitle">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="assignModalTitle">Assign Anomaly for Verification</h3>
+                <button class="modal-close-btn" onclick="closeModal('assignAlertModal')" aria-label="Close modal">✕</button>
+            </div>
+            <form id="assignAlertForm">
+                <input type="hidden" id="assignAlertId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="assignOfficer">Assigned Officer *</label>
+                        <select id="assignOfficer" class="form-select" required>
+                            <option value="">Select Officer...</option>
+                            <option value="Dr. R. K. Sharma, IAS (Nodal Officer)">Dr. R. K. Sharma, IAS (Nodal Officer)</option>
+                            <option value="Er. A. K. Verma (Technical Quality Cell)">Er. A. K. Verma (Technical Quality Cell)</option>
+                            <option value="Shri Rajeshwar Singh, PCS (SDM / Nodal)">Shri Rajeshwar Singh, PCS (SDM / Nodal)</option>
+                            <option value="Smt. Vandana Yadav (Finance Officer)">Smt. Vandana Yadav (Finance Officer)</option>
+                            <option value="Er. Manoj Tiwari (PWD Executive Engineer)">Er. Manoj Tiwari (PWD Executive Engineer)</option>
+                            <option value="Shri D. P. Singh (DRDA Field Engineer)">Shri D. P. Singh (DRDA Field Engineer)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="assignDepartment">Department / Unit *</label>
+                        <select id="assignDepartment" class="form-select" required>
+                            <option value="Technical Quality & Audit Cell">Technical Quality & Audit Cell</option>
+                            <option value="District Nodal Cell">District Nodal Cell</option>
+                            <option value="Treasury & Finance Reconciliation">Treasury & Finance Reconciliation</option>
+                            <option value="Public Works Department (PWD)">Public Works Department (PWD)</option>
+                            <option value="District Rural Development Agency (DRDA)">District Rural Development Agency (DRDA)</option>
+                            <option value="Jal Nigam Engineering Division">Jal Nigam Engineering Division</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="assignComment">Instructions / Scope of Inspection</label>
+                        <textarea id="assignComment" class="form-textarea" rows="3" placeholder="Specify on-site verification targets or documentation required..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assignAlertModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveAssignBtn">Confirm Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Note Modal (Requirement 11) -->
+    <div class="modal-overlay" id="addNoteModal" role="dialog" aria-modal="true" aria-labelledby="noteModalTitle">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="noteModalTitle">Append Verification Note</h3>
+                <button class="modal-close-btn" onclick="closeModal('addNoteModal')" aria-label="Close modal">✕</button>
+            </div>
+            <form id="addNoteForm">
+                <input type="hidden" id="noteAlertId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="addNoteAuthor">Author *</label>
+                        <input type="text" id="addNoteAuthor" class="form-input" value="Dr. R. K. Sharma, IAS" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="addNoteDate">Date & Time *</label>
+                        <input type="text" id="addNoteDate" class="form-input" required readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="addNoteText">Verification Observation / Note *</label>
+                        <textarea id="addNoteText" class="form-textarea" rows="3" placeholder="Enter findings, telephonic clarification, or field verification record..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addNoteModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveNoteBtn">Append Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related Work Telemetry Modal (Requirement 14) -->
+    <div class="modal-overlay" id="relatedWorkModal" role="dialog" aria-modal="true" aria-labelledby="relatedWorkTitle">
+        <div class="modal-container" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="relatedWorkTitle">Related Work Full Telemetry</h3>
+                <button class="modal-close-btn" onclick="closeModal('relatedWorkModal')" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body" id="relatedWorkModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('relatedWorkModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js?v=4.5"></script>
+    <script src="../data/india-districts.js?v=4.5"></script>
+    <script src="../js/config.js?v=4.5"></script>
+    <script src="../js/api.js?v=4.5"></script>
+    <script src="../js/main.js?v=4.5"></script>
+    <script src="../js/alerts.js?v=4.5"></script>
+</body>
+</html>

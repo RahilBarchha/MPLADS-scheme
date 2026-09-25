@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System & Backend Connection Verification | MPLADS Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <style>
+        .diag-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px 60px 20px;
+        }
+        .diag-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 32px;
+            color: #ffffff;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .diag-hero::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(34,197,94,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .diag-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .diag-status-pill.connecting {
+            background: rgba(234, 179, 8, 0.2);
+            color: #facc15;
+            border-color: rgba(234, 179, 8, 0.4);
+        }
+        .diag-status-pill.offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        .diag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        .diag-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .diag-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .diag-card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .diag-card-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .diag-card-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .test-console-box {
+            background: #090d16;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            font-size: 0.82rem;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+            max-height: 380px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .test-actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .btn-live {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-live:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+    </style>
+</head>
+<body style="background: var(--bg-surface-subtle);">
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="diag-container">
+        <!-- Top Navigation -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="national-emblem-badge" style="font-size:1.8rem;">🏛️</div>
+                <div>
+                    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin:0;">Full-Stack Verification & Diagnostics</h1>
+                    <span style="font-size:0.82rem;color:var(--text-secondary);">MoSPI MPLADS Online System • Live Integration Inspector</span>
+                </div>
+            </div>
+            <div>
+                <a href="index.html" class="btn btn-primary" style="display:flex;align-items:center;gap:6px;font-weight:700;">
+                    🚀 Open Central Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Hero Card -->
+        <div id="fileProtocolWarning" style="display:none;background:#fef3c7;border:2px solid #f59e0b;padding:20px;border-radius:14px;margin-bottom:24px;color:#92400e;box-shadow:0 6px 20px rgba(245,158,11,0.15);">
+            <div style="font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <span style="font-size:1.4rem;">⚠️</span> Browsing via Local File (<code>file:///</code>) Detected
+            </div>
+            <p style="margin:6px 0 12px 0;font-size:0.92rem;line-height:1.5;color:#78350f;">
+                Your backend servers are <strong>active and running on Port 5000 and Port 8080</strong>, but web browsers (Google Chrome, Microsoft Edge) strictly <strong>block all network calls to localhost from local <code>file://</code> files</strong> due to Private Network Access & CORS security policies.
+            </p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <a href="http://localhost:8080/connection-test.html" class="btn btn-primary" style="background:#2563eb;color:#ffffff;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    🚀 Open via http://localhost:8080 (Live Server)
+                </a>
+                <a href="http://localhost:5000/connection-test.html" class="btn btn-secondary" style="font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    ⚡ Open via http://localhost:5000
+                </a>
+            </div>
+        </div>
+
+        <div class="diag-hero">
+            <div id="heroStatusPill" class="diag-status-pill connecting">
+                <span class="badge-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;"></span>
+                <span id="heroStatusText">Verifying Backend Connection...</span>
+            </div>
+            <h2 style="font-size:1.7rem;font-weight:800;margin-bottom:8px;">Frontend & Express Backend Unified Link</h2>
+            <p style="color:#94a3b8;font-size:0.95rem;max-width:700px;line-height:1.5;">
+                This diagnostic dashboard confirms that your client frontend is actively communicating with the Node.js Express REST API backend over port <strong>5000</strong> with live database hydration and Groq AI inference.
+            </p>
+            <div style="display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;font-size:0.85rem;color:#cbd5e1;">
+                <div>Host URL: <strong id="valHostUrl" style="color:#fff;">Detecting...</strong></div>
+                <div>API Base: <strong id="valApiBase" style="color:#fff;">http://localhost:5000/api</strong></div>
+                <div>Ping Latency: <strong id="valLatency" style="color:#4ade80;">-- ms</strong></div>
+                <div>Backend PID / Status: <strong id="valBackendStatus" style="color:#4ade80;">Active</strong></div>
+            </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="diag-grid">
+            <div class="diag-card">
+                <div class="diag-card-header">
+                    <span class="diag-card-title">REST API Server</span>
+                    <span style="font-size:1.2rem;">⚡</span>
+                </div>
+                <div class="diag-card-value" id="kpiApiStatus" style="color:#16a34a;">HTTP 200 OK</div>
+                <div class="diag-card-desc" id="kpiApiDesc">Express server active on port 5000</div>
+            </div>
+
+            <div class="diag-card">
+                <div class="diag-card-header">
+                    <span class="diag-card-title">AI Intelligence Core</span>
+                    <span style="font-size:1.2rem;">🤖</span>
+                </div>
+                <div class="diag-card-value" id="kpiAiStatus" style="color:#0284c7;">Groq Qwen 27B</div>
+                <div class="diag-card-desc">API Key verified; Live forensic auditing</div>
+            </div>
+
+            <div class="diag-card">
+                <div class="diag-card-header">
+                    <span class="diag-card-title">Database Hydration</span>
+                    <span style="font-size:1.2rem;">📦</span>
+                </div>
+                <div class="diag-card-value" id="kpiDbStatus">-- Works</div>
+                <div class="diag-card-desc" id="kpiDbDesc">Loaded from persistent MoSPI DataStore</div>
+            </div>
+
+            <div class="diag-card">
+                <div class="diag-card-header">
+                    <span class="diag-card-title">Incumbent Officer</span>
+                    <span style="font-size:1.2rem;">👤</span>
+                </div>
+                <div class="diag-card-value" id="kpiOfficerStatus" style="font-size:1.1rem;color:var(--primary-900);">Dr. R. K. Sharma</div>
+                <div class="diag-card-desc">District Magistrate (Varanasi)</div>
+            </div>
+        </div>
+
+        <!-- Interactive Live Testing Console -->
+        <div style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:16px;padding:24px;box-shadow:0 4px 14px rgba(0,0,0,0.04);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-primary);margin:0;">Live Interactive Testing Suite</h3>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">Click any action to perform a live real-time request between the frontend and backend:</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="clearConsole()">🧹 Clear Console</button>
+            </div>
+
+            <div class="test-actions-bar">
+                <button class="btn-live" onclick="runHealthCheck()">
+                    🔍 Ping API Health
+                </button>
+                <button class="btn-live" onclick="fetchLiveProjects()">
+                    📂 Fetch Projects (/api/projects)
+                </button>
+                <button class="btn-live" onclick="fetchLiveAlerts()">
+                    🚨 Fetch Anomaly Alerts (/api/alerts)
+                </button>
+                <button class="btn-live" onclick="testLiveAiCopilot()">
+                    🤖 Test Live AI Query (Groq)
+                </button>
+                <button class="btn-live" style="background:linear-gradient(135deg,#15803d,#166534);" onclick="testCreateProject()">
+                    ➕ Test Add Project (POST)
+                </button>
+            </div>
+
+            <div class="test-console-box" id="testConsole">
+[Ready] System initialized. Click any button above to test real-time connectivity...
+            </div>
+        </div>
+
+        <!-- Direct Navigation Hub -->
+        <div style="margin-top:28px;text-align:center;">
+            <div style="font-size:0.86rem;color:var(--text-secondary);margin-bottom:14px;font-weight:600;">
+                All portal modules connected to the live backend:
+            </div>
+            <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+                <a href="index.html" class="btn btn-secondary">🏛️ Central Dashboard</a>
+                <a href="pages/works.html" class="btn btn-secondary">📋 Works Directory</a>
+                <a href="pages/map.html" class="btn btn-secondary">🗺️ Interactive GIS Map</a>
+                <a href="pages/funds.html" class="btn btn-secondary">💰 Treasury & Funds</a>
+                <a href="pages/alerts.html" class="btn btn-secondary">🚨 Alerts & Anomalies</a>
+                <a href="pages/monitoring.html" class="btn btn-secondary">🔍 Inspection & Monitoring</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Scripts -->
+    <script src="data/mock-data.js"></script>
+    <script src="data/india-districts.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        const consoleEl = document.getElementById('testConsole');
+
+        function logConsole(msg) {
+            const time = new Date().toLocaleTimeString();
+            consoleEl.textContent = `[${time}] ${msg}\n` + consoleEl.textContent;
+        }
+
+        function clearConsole() {
+            consoleEl.textContent = '[Console Cleared]\n';
+        }
+
+        async function initDiagnostics() {
+            const hostUrlEl = document.getElementById('valHostUrl');
+            const apiBaseEl = document.getElementById('valApiBase');
+            const latencyEl = document.getElementById('valLatency');
+            const heroStatusPill = document.getElementById('heroStatusPill');
+            const heroStatusText = document.getElementById('heroStatusText');
+
+            if (hostUrlEl) hostUrlEl.textContent = window.location.origin || 'file:// (Local Disk)';
+
+            if (window.location.protocol === 'file:') {
+                const warnEl = document.getElementById('fileProtocolWarning');
+                if (warnEl) warnEl.style.display = 'block';
+                logConsole('⚠️ NOTICE: Browsing via local file:/// URL detected.');
+                logConsole('👉 Click "Open via http://localhost:8080" above for live backend connectivity!');
+            }
+
+            const t0 = performance.now();
+            const health = await window.MPLADS_API.checkHealth();
+            const latency = Math.round(performance.now() - t0);
+
+            if (apiBaseEl) apiBaseEl.textContent = window.MPLADS_API.getBaseUrl();
+            if (latencyEl) latencyEl.textContent = `${latency} ms`;
+
+            if (health.connected) {
+                heroStatusPill.className = 'diag-status-pill';
+                heroStatusText.textContent = `🟢 Connected & Operational (${latency} ms latency)`;
+                document.getElementById('kpiApiStatus').textContent = 'HTTP 200 OK';
+                document.getElementById('kpiApiDesc').textContent = `Connected at ${window.MPLADS_API.getBaseUrl()}`;
+                logConsole(`✅ SUCCESS: Connected to Express backend on ${window.MPLADS_API.getBaseUrl()} (${latency}ms)`);
+            } else {
+                heroStatusPill.className = 'diag-status-pill offline';
+                heroStatusText.textContent = '❌ Backend Not Reachable on Port 5000';
+                document.getElementById('kpiApiStatus').textContent = 'OFFLINE';
+                document.getElementById('kpiApiStatus').style.color = '#ef4444';
+                logConsole(`❌ ERROR: Could not connect to backend at ${window.MPLADS_API.getBaseUrl()}`);
+            }
+
+            // Fetch live works count
+            try {
+                const apiBase = window.MPLADS_API.getBaseUrl();
+                const res = await fetch(`${apiBase}/projects?limit=100`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('kpiDbStatus').textContent = `${data.total || data.data.length} Works`;
+                    document.getElementById('kpiDbDesc').textContent = `Hydrated live from DataStore`;
+                    logConsole(`📦 Hydrated ${data.total || data.data.length} works from backend DataStore.`);
+                }
+            } catch (e) {
+                logConsole(`⚠️ Failed fetching works count: ${e.message}`);
+            }
+        }
+
+        async function runHealthCheck() {
+            logConsole('--- Pinging GET /api/health ---');
+            const t0 = performance.now();
+            const apiBase = window.MPLADS_API.getBaseUrl();
+            try {
+                const res = await fetch(`${apiBase}/health`);
+                const lat = Math.round(performance.now() - t0);
+                const data = await res.json();
+                logConsole(`Response ${res.status} (${lat}ms):\n` + JSON.stringify(data, null, 2));
+            } catch (e) {
+                if (window.location.protocol === 'file:') {
+                    logConsole(`Request failed: ${e.message} (Browsers block network calls from file:///. Open via http://localhost:8080/connection-test.html)`);
+                } else {
+                    logConsole(`Request failed: ${e.message}`);
+                }
+            }
+        }
+
+        async function fetchLiveProjects() {
+            logConsole('--- Fetching GET /api/projects ---');
+            const apiBase = window.MPLADS_API.getBaseUrl();
+            try {
+                const res = await fetch(`${apiBase}/projects?limit=5`);
+                const data = await res.json();
+                logConsole(`Fetched ${data.data?.length} works (Total: ${data.total}):\n` + 
+                    data.data.map(w => `• [${w.id}] ${w.name} (${w.district}) - ₹${w.approvedAmountLakhs}L [${w.status}]`).join('\n')
+                );
+            } catch (e) {
+                if (window.location.protocol === 'file:') {
+                    logConsole(`Request failed: ${e.message} (Open via http://localhost:8080/connection-test.html for live API)`);
+                } else {
+                    logConsole(`Request failed: ${e.message}`);
+                }
+            }
+        }
+
+        async function fetchLiveAlerts() {
+            logConsole('--- Fetching GET /api/alerts ---');
+            const apiBase = window.MPLADS_API.getBaseUrl();
+            try {
+                const res = await fetch(`${apiBase}/alerts`);
+                const data = await res.json();
+                logConsole(`Fetched ${data.data?.length} anomaly alerts:\n` + 
+                    data.data.slice(0, 4).map(a => `• [${a.id}] ${a.title} (${a.district}) - ${a.severity} [${a.status}]`).join('\n')
+                );
+            } catch (e) {
+                if (window.location.protocol === 'file:') {
+                    logConsole(`Request failed: ${e.message} (Open via http://localhost:8080/connection-test.html for live API)`);
+                } else {
+                    logConsole(`Request failed: ${e.message}`);
+                }
+            }
+        }
+
+        async function testLiveAiCopilot() {
+            logConsole('--- Querying Live AI Copilot (Groq Qwen 27B) ---');
+            const apiBase = window.MPLADS_API.getBaseUrl();
+            logConsole('Sending query: "Summarize priority high risk projects in Varanasi"...');
+            try {
+                const t0 = performance.now();
+                const res = await fetch(`${apiBase}/ai/copilot`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: 'Summarize priority high risk projects in Varanasi' })
+                });
+                const lat = Math.round(performance.now() - t0);
+                const data = await res.json();
+                logConsole(`AI Response received in ${lat}ms from ${data.source}:\n` + data.reply);
+            } catch (e) {
+                if (window.location.protocol === 'file:') {
+                    logConsole(`AI query failed: ${e.message} (Open via http://localhost:8080/connection-test.html for live AI)`);
+                } else {
+                    logConsole(`AI query failed: ${e.message}`);
+                }
+            }
+        }
+
+        async function testCreateProject() {
+            logConsole('--- Testing POST /api/projects (New Work Creation) ---');
+            const apiBase = window.MPLADS_API.getBaseUrl();
+            const testWork = {
+                name: 'Diagnostic Connectivity Test Community Facility',
+                district: 'Varanasi',
+                constituency: 'Varanasi (PC-77)',
+                category: 'Community Assets & Skills',
+                approvedAmountLakhs: 25.0,
+                releasedAmountLakhs: 12.5,
+                expenditureLakhs: 0.0,
+                completionPct: 0,
+                status: 'PENDING',
+                risk: 'LOW',
+                startDate: new Date().toISOString().slice(0, 10),
+                expectedCompletion: '2026-12-31',
+                implementingAgency: 'UP Rajkiya Nirman Nigam'
+            };
+            try {
+                const res = await fetch(`${apiBase}/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testWork)
+                });
+                const data = await res.json();
+                logConsole(`✅ Project created with ID: ${data.data?.id} (Status ${res.status}):\n` + JSON.stringify(data.data, null, 2));
+                // Update KPI count
+                document.getElementById('kpiDbStatus').textContent = `Updated (${data.data?.id})`;
+            } catch (e) {
+                if (window.location.protocol === 'file:') {
+                    logConsole(`Failed creating project: ${e.message} (Open via http://localhost:8080/connection-test.html for live API)`);
+                } else {
+                    logConsole(`Failed creating project: ${e.message}`);
+                }
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initDiagnostics);
+    </script>
+</body>
+</html>

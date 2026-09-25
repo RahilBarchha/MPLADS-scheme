@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Works Directory | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item active">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">🏗️ Development Works Management</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Works Directory</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-primary btn-sm" onclick="openAddWorkModal()">+ Recommend New Work</button>
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Officer</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Works Summary Cards -->
+                <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="kpi-card accent-primary">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Total Sanctioned Works</span>
+                            <div class="kpi-icon-wrap">📋</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="worksKpiTotal">1,420</span>
+                        </div>
+                        <div class="kpi-footer"><span>Across 8 Districts</span></div>
+                    </div>
+
+                    <div class="kpi-card accent-info">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Active Execution</span>
+                            <div class="kpi-icon-wrap info">⚙️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="worksKpiOngoing">352</span>
+                        </div>
+                        <div class="kpi-footer"><span>262 on schedule</span></div>
+                    </div>
+
+                    <div class="kpi-card accent-success">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Completed & Audited</span>
+                            <div class="kpi-icon-wrap success">✅</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="worksKpiCompleted">948</span>
+                        </div>
+                        <div class="kpi-footer"><span>66.8% Success Rate</span></div>
+                    </div>
+
+                    <div class="kpi-card accent-danger">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Delayed Works</span>
+                            <div class="kpi-icon-wrap danger">⏱️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="worksKpiDelayed">120</span>
+                        </div>
+                        <div class="kpi-footer"><span style="color:var(--danger-700);font-weight:600;">Action Required</span></div>
+                    </div>
+                </section>
+
+                <!-- Search & Filters -->
+                <section class="filter-bar">
+                    <div class="filter-item" style="flex: 1.5; min-width: 240px;">
+                        <input type="text" id="worksSearchInput" class="form-input" placeholder="🔍 Search by work title, sector, ID or agency...">
+                    </div>
+
+                    <div class="filter-item">
+                        <select id="worksFilterCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                            <option value="Education & Digital Labs">Education & Digital Labs</option>
+                            <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                            <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                            <option value="Community Assets & Skills">Community Assets & Skills</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <select id="worksFilterStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <select id="worksFilterRisk" class="form-select">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-secondary btn-sm" id="worksResetFilterBtn">Reset</button>
+                </section>
+
+                <!-- Works Table Card -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Sanctioned Works Inventory</h2>
+                        <span class="badge badge-info" id="worksCountBadge">10 Works Shown</span>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Work Title & Sector</th>
+                                        <th>District & Constituency</th>
+                                        <th>Implementing Agency</th>
+                                        <th>Sanctioned (₹ L)</th>
+                                        <th>Expenditure (₹ L)</th>
+                                        <th>Physical Progress</th>
+                                        <th>Status</th>
+                                        <th>Risk</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="worksDirectoryTableBody">
+                                    <!-- Populated dynamically by works.js -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-container">
+                            <span class="pagination-info" id="worksPaginationInfo">Showing 1 to 10 of 10 works</span>
+                            <div class="pagination-controls" id="worksPaginationControls"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Work Modal -->
+    <div class="modal-overlay" id="addWorkModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Recommend New MPLADS Work</h3>
+                <button class="modal-close-btn" onclick="closeModal('addWorkModal')">✕</button>
+            </div>
+            <form id="addWorkForm">
+                <div class="modal-body">
+                    <div id="addWorkError" class="form-error" style="display:none;background:#fee2e2;padding:8px 12px;border-radius:6px;margin-bottom:12px;"></div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="addWorkName">Work Title / Description *</label>
+                        <input type="text" id="addWorkName" class="form-input" placeholder="e.g. Construction of Community RO Plant" required>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkCategory">Category / Sector *</label>
+                            <select id="addWorkCategory" class="form-select" required>
+                                <option value="">Select Category</option>
+                                <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                                <option value="Education & Digital Labs">Education & Digital Labs</option>
+                                <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                                <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                                <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                                <option value="Community Assets & Skills">Community Assets & Skills</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkDistrict">District *</label>
+                            <select id="addWorkDistrict" class="form-select" required>
+                                <option value="">Select District</option>
+                                <option value="Varanasi">Varanasi</option>
+                                <option value="Gorakhpur">Gorakhpur</option>
+                                <option value="Prayagraj">Prayagraj</option>
+                                <option value="Lucknow">Lucknow</option>
+                                <option value="Ayodhya">Ayodhya</option>
+                                <option value="Kanpur Nagar">Kanpur Nagar</option>
+                                <option value="Mirzapur">Mirzapur</option>
+                                <option value="Jaunpur">Jaunpur</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkConstituency">Constituency *</label>
+                            <input type="text" id="addWorkConstituency" class="form-input" placeholder="e.g. Varanasi (PC-77)" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkAgency">Implementing Agency *</label>
+                            <input type="text" id="addWorkAgency" class="form-input" placeholder="e.g. DRDA / PWD / Jal Nigam" required>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkCost">Approved Amount (₹ Lakhs) *</label>
+                            <input type="number" step="0.01" min="0.1" id="addWorkCost" class="form-input" placeholder="e.g. 45.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkStartDate">Start Date *</label>
+                            <input type="date" id="addWorkStartDate" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addWorkEndDate">Target Completion *</label>
+                            <input type="date" id="addWorkEndDate" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="addWorkDesc">Justification & Scope Details</label>
+                        <textarea id="addWorkDesc" class="form-textarea" rows="2" placeholder="Brief note on beneficiary population and community need..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addWorkModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveNewWorkBtn">Submit Recommendation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Work Details Modal -->
+    <div class="modal-overlay" id="workDetailsModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Work Item Inspection Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('workDetailsModal')">✕</button>
+            </div>
+            <div class="modal-body" id="workDetailsModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('workDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Work Modal -->
+    <div class="modal-overlay" id="editWorkModal">
+        <div class="modal-container" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Work Progress & Status</h3>
+                <button class="modal-close-btn" onclick="closeModal('editWorkModal')">✕</button>
+            </div>
+            <form id="editWorkForm">
+                <input type="hidden" id="editWorkId">
+                <div class="modal-body">
+                    <div style="background:var(--bg-surface-raised);padding:10px 14px;border-radius:6px;margin-bottom:14px;">
+                        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:700;" id="editWorkBadgeId">WRK-ID</span>
+                        <h4 id="editWorkTitle" style="margin:2px 0 0;font-size:0.95rem;color:var(--primary-900);">Work Name</h4>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editWorkProgress">Physical Progress (%) *</label>
+                        <input type="number" id="editWorkProgress" class="form-input" min="0" max="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editWorkStatus">Current Implementation Status *</label>
+                        <select id="editWorkStatus" class="form-select" required>
+                            <option value="PENDING">PENDING</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editWorkAgency">Implementing Agency</label>
+                        <input type="text" id="editWorkAgency" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editWorkRisk">Risk Level</label>
+                        <select id="editWorkRisk" class="form-select">
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editWorkModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveEditWorkBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/works.js"></script>
+</body>
+</html>

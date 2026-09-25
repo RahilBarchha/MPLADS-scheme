@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item active">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">📡 Comprehensive Field Monitoring</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Field & Financial Monitoring</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-search">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="monitoringSearchInput" placeholder="Search work ID, title..." aria-label="Search works">
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="icon-button" id="notificationBtn" title="Alerts & Notifications">
+                            🔔
+                            <span class="badge-dot"></span>
+                        </button>
+                    </div>
+
+                    <div class="user-profile" role="button" tabindex="0" title="Click to manage Officer Profile & Perspective">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Dr. R. K. Sharma, IAS</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Comprehensive Multi-filter Bar -->
+                <section class="filter-bar">
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterFY" style="margin:0;font-size:0.75rem;">FY:</label>
+                        <select id="monFilterFY" class="form-select">
+                            <option value="ALL">All Financial Years</option>
+                            <option value="2025-26" selected>2025–26</option>
+                            <option value="2024-25">2024–25</option>
+                            <option value="2023-24">2023–24</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterDistrict" style="margin:0;font-size:0.75rem;">District:</label>
+                        <select id="monFilterDistrict" class="form-select">
+                            <option value="ALL">All Districts</option>
+                            <option value="Varanasi">Varanasi</option>
+                            <option value="Gorakhpur">Gorakhpur</option>
+                            <option value="Prayagraj">Prayagraj</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Ayodhya">Ayodhya</option>
+                            <option value="Kanpur Nagar">Kanpur Nagar</option>
+                            <option value="Mirzapur">Mirzapur</option>
+                            <option value="Jaunpur">Jaunpur</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterConstituency" style="margin:0;font-size:0.75rem;">Constituency:</label>
+                        <select id="monFilterConstituency" class="form-select">
+                            <option value="ALL">All Constituencies</option>
+                            <option value="Varanasi (PC-77)">Varanasi (PC-77)</option>
+                            <option value="Gorakhpur (PC-64)">Gorakhpur (PC-64)</option>
+                            <option value="Prayagraj (PC-52)">Prayagraj (PC-52)</option>
+                            <option value="Lucknow (PC-35)">Lucknow (PC-35)</option>
+                            <option value="Ayodhya (PC-54)">Ayodhya (PC-54)</option>
+                            <option value="Kanpur (PC-43)">Kanpur (PC-43)</option>
+                            <option value="Mirzapur (PC-79)">Mirzapur (PC-79)</option>
+                            <option value="Jaunpur (PC-73)">Jaunpur (PC-73)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterMP" style="margin:0;font-size:0.75rem;">MP:</label>
+                        <select id="monFilterMP" class="form-select">
+                            <option value="ALL">All MPs</option>
+                            <option value="Hon. MP (Varanasi)">Hon. MP (Varanasi)</option>
+                            <option value="Hon. MP (Gorakhpur)">Hon. MP (Gorakhpur)</option>
+                            <option value="Hon. MP (Prayagraj)">Hon. MP (Prayagraj)</option>
+                            <option value="Hon. MP (Lucknow)">Hon. MP (Lucknow)</option>
+                            <option value="Hon. MP (Ayodhya)">Hon. MP (Ayodhya)</option>
+                            <option value="Hon. MP (Mirzapur)">Hon. MP (Mirzapur)</option>
+                            <option value="Hon. MP (Jaunpur)">Hon. MP (Jaunpur)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterCategory" style="margin:0;font-size:0.75rem;">Category:</label>
+                        <select id="monFilterCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                            <option value="Education & Digital Labs">Education & Digital Labs</option>
+                            <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                            <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                            <option value="Community Assets & Skills">Community Assets & Skills</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterStatus" style="margin:0;font-size:0.75rem;">Status:</label>
+                        <select id="monFilterStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="monFilterRisk" style="margin:0;font-size:0.75rem;">Risk:</label>
+                        <select id="monFilterRisk" class="form-select">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex;gap:8px;margin-left:auto;">
+                        <button class="btn btn-primary btn-sm" id="monApplyFiltersBtn">Apply Filters</button>
+                        <button class="btn btn-secondary btn-sm" id="monResetFiltersBtn">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Monitoring Data Table Card -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Active Monitoring Table</h2>
+                            <p class="card-subtitle">Showing live progress, financial disbursement, and anomaly risk ratings</p>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="exportMonitoringCSV()">📥 Export CSV</button>
+                            <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print</button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table" id="monitoringMainTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="sortMonitoringTable('id')">Work ID ↕</th>
+                                        <th class="sortable" onclick="sortMonitoringTable('name')">Work Name ↕</th>
+                                        <th class="sortable" onclick="sortMonitoringTable('district')">District ↕</th>
+                                        <th>Constituency</th>
+                                        <th>Category</th>
+                                        <th class="sortable" onclick="sortMonitoringTable('approved')">Approved (₹ L) ↕</th>
+                                        <th>Released (₹ L)</th>
+                                        <th>Expenditure (₹ L)</th>
+                                        <th class="sortable" onclick="sortMonitoringTable('progress')">Completion % ↕</th>
+                                        <th>Status</th>
+                                        <th>Risk</th>
+                                        <th>Last Updated</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monitoringTableBody">
+                                    <!-- Rendered dynamically by monitoring.js -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination UI -->
+                        <div class="pagination-container">
+                            <span class="pagination-info" id="monPaginationInfo">Showing 1 to 10 of 10 works</span>
+                            <div class="pagination-controls" id="monPaginationControls">
+                                <button class="page-btn" disabled>« Previous</button>
+                                <button class="page-btn active">1</button>
+                                <button class="page-btn" disabled>Next »</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal-overlay" id="workDetailsModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Work Item Inspection Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('workDetailsModal')">✕</button>
+            </div>
+            <div class="modal-body" id="workDetailsModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('workDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/monitoring.js"></script>
+</body>
+</html>

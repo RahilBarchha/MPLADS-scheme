@@ -1,0 +1,95 @@
+/* ==============================================================================
+   MPLADS Monitoring & Analytics Platform - Responsive Layout Rules
+   Breakpoints: 1200px, 992px, 768px, 576px
+   ============================================================================== */
+
+@media (max-width: 1200px) {
+    .dashboard-grid-2col {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-grid-half {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    :root {
+        --sidebar-width: 0px;
+    }
+
+    .app-sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+    }
+
+    .app-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .app-main {
+        margin-left: 0;
+    }
+
+    .header-search {
+        width: 200px;
+    }
+
+    .page-content {
+        padding: var(--space-4);
+        gap: var(--space-4);
+    }
+}
+
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0 var(--space-4);
+    }
+
+    .header-search {
+        display: none;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--space-3);
+    }
+
+    .kpi-value {
+        font-size: 1.35rem;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-item {
+        min-width: 100%;
+    }
+
+    .user-info {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-title {
+        font-size: 1.1rem;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+    }
+
+    .card-body {
+        padding: var(--space-4);
+    }
+
+    .modal-container {
+        width: 95%;
+        margin: var(--space-2);
+    }
+}

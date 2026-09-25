@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPLADS Monitoring & Analytics Platform | Government of India</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js Local Asset with CDN Fallback -->
+    <script src="assets/chart.umd.min.js"></script>
+
+    <!-- Authentication Guard: Redirect to Login Gateway if unauthenticated -->
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("pages/login.html");
+            }
+        })();
+    </script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css?v=4.5">
+    <link rel="stylesheet" href="css/components.css?v=4.5">
+    <link rel="stylesheet" href="css/dashboard.css?v=4.5">
+    <link rel="stylesheet" href="css/ai-copilot.css?v=4.5">
+    <link rel="stylesheet" href="css/responsive.css?v=4.5">
+</head>
+<body>
+    <!-- Top Tricolor Ribbon -->
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- ====================================================================
+             SIDEBAR NAVIGATION
+             ==================================================================== -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge" aria-hidden="true">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="index.html" class="nav-item active">
+                    <span class="nav-icon" aria-hidden="true">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="pages/monitoring.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="pages/works.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="pages/funds.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="pages/alerts.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge" id="sidebarAlertBadge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="pages/analytics.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="pages/map.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="pages/reports.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="pages/settings.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="pages/login.html" class="nav-item">
+                    <span class="nav-icon" aria-hidden="true">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ====================================================================
+             MAIN APPLICATION WORKSPACE
+             ==================================================================== -->
+        <div class="app-main">
+            <!-- Top Header Bar -->
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">
+                        <button id="sidebarToggle" class="icon-button" style="display:none;margin-right:8px;" aria-label="Toggle Navigation Drawer">☰</button>
+                        Dashboard & Executive Overview
+                    </h1>
+                    <div class="breadcrumb">
+                        <a href="index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Overview & Telemetry</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-search">
+                        <span class="search-icon" aria-hidden="true">🔍</span>
+                        <input type="text" id="globalSearchInput" placeholder="Search work ID, title, district..." aria-label="Global search">
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="btn btn-live-audit btn-sm" id="headerLiveAuditBtn" onclick="window.runLiveAiAuditScan()" title="Trigger Autonomous AI Anomaly & Fraud Audit" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;font-weight:700;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(245,158,11,0.3);font-size:0.82rem;">
+                            <span>⚡</span> Run AI Audit Scan
+                        </button>
+                        <a href="pages/login.html" class="btn btn-primary btn-sm" id="btnHeaderLogin" style="background:#0f172a;color:#ffffff;border:none;padding:6px 14px;border-radius:6px;font-size:0.82rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none;" title="Open Login & Registration Portal">
+                            <span>🔐</span> Login / Switch User
+                        </a>
+                        <button class="icon-button" id="notificationBtn" title="Alerts & Notifications" aria-label="Notifications">
+                            🔔
+                            <span class="badge-dot"></span>
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="if(confirm('Sign out of active session and return to Login Portal?')){localStorage.removeItem('mplads_user_session');sessionStorage.removeItem('mplads_user_session');window.location.href='pages/login.html';}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:5px 9px;color:#dc2626;border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;cursor:pointer;font-weight:600;" title="Sign out of current account">
+                            🚪 Sign Out
+                        </button>
+                    </div>
+
+                    <div class="user-profile" role="button" tabindex="0" aria-label="User Profile Settings" title="Click to manage Officer Profile & Perspective">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile Avatar" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Dr. R. K. Sharma, IAS</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Demo Notice Banner -->
+                <div class="gov-banner-demo">
+                    <div>
+                        <strong>⚠️ Demonstration Environment:</strong> All figures, project records, and officer allocations are synthetic demonstration data for system validation.
+                    </div>
+                    <div>
+                        <span class="badge badge-neutral" id="currentFiscalBadge">Fiscal Cycle: FY 2025–2026</span>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Multi-Filter Bar -->
+                <section class="filter-bar" aria-label="Dashboard Filters">
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterFY" style="margin:0;font-size:0.75rem;">FY:</label>
+                        <select id="dashFilterFY" class="form-select">
+                            <option value="ALL" selected>All Financial Years</option>
+                            <option value="2025-26">FY 2025–26</option>
+                            <option value="2024-25">FY 2024–25</option>
+                            <option value="2023-24">FY 2023–24</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterDistrict" style="margin:0;font-size:0.75rem;">District:</label>
+                        <select id="dashFilterDistrict" class="form-select">
+                            <option value="ALL">All Districts</option>
+                            <option value="Varanasi">Varanasi</option>
+                            <option value="Gorakhpur">Gorakhpur</option>
+                            <option value="Prayagraj">Prayagraj</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Ayodhya">Ayodhya</option>
+                            <option value="Kanpur Nagar">Kanpur Nagar</option>
+                            <option value="Mirzapur">Mirzapur</option>
+                            <option value="Jaunpur">Jaunpur</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterConstituency" style="margin:0;font-size:0.75rem;">Constituency:</label>
+                        <select id="dashFilterConstituency" class="form-select">
+                            <option value="ALL">All Constituencies</option>
+                            <option value="Varanasi (PC-77)">Varanasi (PC-77)</option>
+                            <option value="Gorakhpur (PC-64)">Gorakhpur (PC-64)</option>
+                            <option value="Prayagraj (PC-52)">Prayagraj (PC-52)</option>
+                            <option value="Lucknow (PC-35)">Lucknow (PC-35)</option>
+                            <option value="Ayodhya (PC-54)">Ayodhya (PC-54)</option>
+                            <option value="Kanpur (PC-43)">Kanpur (PC-43)</option>
+                            <option value="Mirzapur (PC-79)">Mirzapur (PC-79)</option>
+                            <option value="Jaunpur (PC-73)">Jaunpur (PC-73)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterCategory" style="margin:0;font-size:0.75rem;">Category:</label>
+                        <select id="dashFilterCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                            <option value="Education & Digital Labs">Education & Digital Labs</option>
+                            <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                            <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                            <option value="Community Assets & Skills">Community Assets & Skills</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterStatus" style="margin:0;font-size:0.75rem;">Status:</label>
+                        <select id="dashFilterStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                            <option value="PENDING">PENDING</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="dashFilterRisk" style="margin:0;font-size:0.75rem;">Risk:</label>
+                        <select id="dashFilterRisk" class="form-select">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex;gap:8px;margin-left:auto;">
+                        <button class="btn btn-primary btn-sm" id="dashApplyFiltersBtn">Apply Filters</button>
+                        <button class="btn btn-secondary btn-sm" id="dashResetFiltersBtn">Reset</button>
+                    </div>
+                </section>
+
+                <!-- ================================================================
+                     9 KPI TELEMETRY CARDS (Dynamic calculated values)
+                     ================================================================ -->
+                <section class="kpi-grid" aria-label="Key Performance Indicators">
+                    <!-- 1. Total Allocation -->
+                    <div class="kpi-card accent-primary">
+                        <div class="kpi-top">
+                            <span class="kpi-title">1. Total Allocation</span>
+                            <div class="kpi-icon-wrap" aria-hidden="true">🏛️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiTotalAllocation">₹450.00 Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Sanctioned Budget</span>
+                            <span class="kpi-trend positive">↑ 38 MPs Active</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Funds Released -->
+                    <div class="kpi-card accent-info">
+                        <div class="kpi-top">
+                            <span class="kpi-title">2. Funds Released</span>
+                            <div class="kpi-icon-wrap info" aria-hidden="true">💳</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiFundsReleased">₹385.50 Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Disbursed to Districts</span>
+                            <span class="kpi-trend positive" id="kpiReleasedPct">85.6% Released</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Total Expenditure -->
+                    <div class="kpi-card accent-success">
+                        <div class="kpi-top">
+                            <span class="kpi-title">3. Total Expenditure</span>
+                            <div class="kpi-icon-wrap success" aria-hidden="true">📈</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiTotalExpenditure">₹312.80 Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Settled Vouchers</span>
+                            <span class="kpi-trend positive">↑ +4.2% Q-on-Q</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Utilization % -->
+                    <div class="kpi-card accent-saffron">
+                        <div class="kpi-top">
+                            <span class="kpi-title">4. Utilization %</span>
+                            <div class="kpi-icon-wrap saffron" aria-hidden="true">🎯</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiUtilizationRate">81.1%</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Benchmark: >80.0%</span>
+                            <span class="badge badge-status-completed" id="kpiUtilizationStatusBadge">Optimal</span>
+                        </div>
+                    </div>
+
+                    <!-- 5. Total Works -->
+                    <div class="kpi-card accent-primary">
+                        <div class="kpi-top">
+                            <span class="kpi-title">5. Total Works</span>
+                            <div class="kpi-icon-wrap" aria-hidden="true">📋</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiTotalWorks">1,420</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Sanctioned Projects</span>
+                            <span>6 Sector Focus</span>
+                        </div>
+                    </div>
+
+                    <!-- 6. Completed Works -->
+                    <div class="kpi-card accent-success">
+                        <div class="kpi-top">
+                            <span class="kpi-title">6. Completed Works</span>
+                            <div class="kpi-icon-wrap success" aria-hidden="true">✅</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiCompletedWorks">948</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Geotagged & Audited</span>
+                            <span class="kpi-trend positive" id="kpiCompletedPct">66.8% Ratio</span>
+                        </div>
+                    </div>
+
+                    <!-- 7. Ongoing Works -->
+                    <div class="kpi-card accent-info">
+                        <div class="kpi-top">
+                            <span class="kpi-title">7. Ongoing Works</span>
+                            <div class="kpi-icon-wrap info" aria-hidden="true">⚙️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiOngoingWorks">352</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>In Execution</span>
+                            <span>Active Field Sites</span>
+                        </div>
+                    </div>
+
+                    <!-- 8. Delayed Works -->
+                    <div class="kpi-card accent-danger">
+                        <div class="kpi-top">
+                            <span class="kpi-title">8. Delayed Works</span>
+                            <div class="kpi-icon-wrap danger" aria-hidden="true">⏱️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiDelayedWorks">120</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Exceeding SLA Target</span>
+                            <span class="kpi-trend negative" id="kpiDelayedRatio">8.4% of Portfolio</span>
+                        </div>
+                    </div>
+
+                    <!-- 9. Active Alerts -->
+                    <div class="kpi-card accent-warning">
+                        <div class="kpi-top">
+                            <span class="kpi-title">9. Active Alerts</span>
+                            <div class="kpi-icon-wrap warning" aria-hidden="true">🚨</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpiActiveAlerts">18</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Requires Attention</span>
+                            <span class="badge badge-risk-critical">1 Critical</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================================================================
+                     VISUAL CHARTS SECTION (Chart.js)
+                     ================================================================ -->
+                <section class="dashboard-grid-2col">
+                    <!-- Allocation vs Released vs Expenditure -->
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Allocation vs Release vs Expenditure</h2>
+                                <p class="card-subtitle">Constituency fund flow velocity & verified vouchers (₹ Cr)</p>
+                            </div>
+                            <span class="badge badge-info">Fiscal Multi-Year Comparison</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="allocationVsExpenditureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Status Breakdown -->
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Work Status Distribution</h2>
+                                <p class="card-subtitle">Breakdown across Pending, Ongoing, Completed, Delayed & Cancelled</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="workStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Monthly Expenditure & District Utilization -->
+                <section class="dashboard-grid-half">
+                    <!-- Monthly Expenditure Trend -->
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Monthly Expenditure Velocity</h2>
+                                <p class="card-subtitle">Verified monthly voucher disbursements across 12 months (₹ Cr)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-compact">
+                                <canvas id="monthlyExpenditureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- District Utilization Rate Comparison -->
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">District Fund Utilization Rates</h2>
+                                <p class="card-subtitle">Benchmark comparison (% expenditure against released funds)</p>
+                            </div>
+                            <a href="pages/funds.html" class="btn btn-secondary btn-sm">Full Ledger →</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-compact">
+                                <canvas id="districtUtilizationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================================================================
+                     DATA TABLES SECTION
+                     ================================================================ -->
+                <!-- Recent Works Table -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Recent Development Works</h2>
+                            <p class="card-subtitle">Latest sanctioned recommendations, physical milestones & progress status</p>
+                        </div>
+                        <a href="pages/works.html" class="btn btn-primary btn-sm">Explore All Works →</a>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Work Title & Category</th>
+                                        <th>District</th>
+                                        <th>Approved Amount</th>
+                                        <th>Expenditure</th>
+                                        <th>Physical Progress</th>
+                                        <th>Status</th>
+                                        <th>Risk</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentWorksTableBody">
+                                    <!-- Rendered dynamically by dashboard.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Delayed Projects Watchlist -->
+                <div class="gov-card" style="border-left: 4px solid var(--danger-500); margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title" style="color:var(--danger-700);">⏱️ Critical Delayed Projects Watchlist</h2>
+                            <p class="card-subtitle">Works exceeding target completion deadlines requiring administrative review</p>
+                        </div>
+                        <a href="pages/works.html" class="btn btn-secondary btn-sm">Explore Works Directory →</a>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Work Title & ID</th>
+                                        <th>District</th>
+                                        <th>Target Date</th>
+                                        <th>Days Delayed</th>
+                                        <th>Progress</th>
+                                        <th>Risk</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="delayedProjectsTableBody">
+                                    <!-- Rendered dynamically by dashboard.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Work Details Inspection Modal -->
+    <div class="modal-overlay" id="workDetailsModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Work Item Inspection Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('workDetailsModal')" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body" id="workDetailsModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('workDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data/mock-data.js"></script>
+    <script src="data/india-districts.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

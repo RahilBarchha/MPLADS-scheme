@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Sector Insights | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="../assets/chart.umd.min.js"></script>
+
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">📈 Statistical Analytics & Sectoral Intelligence</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Multi-dimensional Insights</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print Analytics</button>
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Officer</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Analytics Filters Bar -->
+                <section class="filter-bar">
+                    <div class="filter-item">
+                        <label class="form-label" for="anFY" style="margin:0;font-size:0.75rem;">FY:</label>
+                        <select id="anFY" class="form-select">
+                            <option value="2025-26">FY 2025–26</option>
+                            <option value="2024-25">FY 2024–25</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="anDistrict" style="margin:0;font-size:0.75rem;">District:</label>
+                        <select id="anDistrict" class="form-select">
+                            <option value="ALL">All Districts</option>
+                            <option value="Varanasi">Varanasi</option>
+                            <option value="Gorakhpur">Gorakhpur</option>
+                            <option value="Prayagraj">Prayagraj</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Ayodhya">Ayodhya</option>
+                            <option value="Kanpur Nagar">Kanpur Nagar</option>
+                            <option value="Mirzapur">Mirzapur</option>
+                            <option value="Jaunpur">Jaunpur</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="anCategory" style="margin:0;font-size:0.75rem;">Category:</label>
+                        <select id="anCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                            <option value="Education & Digital Labs">Education & Digital Labs</option>
+                            <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                            <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                            <option value="Community Assets & Skills">Community Assets & Skills</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="anStatus" style="margin:0;font-size:0.75rem;">Status:</label>
+                        <select id="anStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="anRisk" style="margin:0;font-size:0.75rem;">Risk:</label>
+                        <select id="anRisk" class="form-select">
+                            <option value="ALL">All Risks</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-left:auto;display:flex;gap:8px;">
+                        <button class="btn btn-primary btn-sm" id="anApplyBtn">Update Analytics</button>
+                        <button class="btn btn-secondary btn-sm" id="anResetBtn">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Grid 1: Fund Utilization & Project Completion -->
+                <section class="dashboard-grid-half">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">1. Fund Utilization Comparison</h2>
+                                <p class="card-subtitle">Released vs Expenditure across Parliamentary Districts (₹ Cr)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anFundUtilChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">2. Project Completion Lifecycle</h2>
+                                <p class="card-subtitle">Distribution of sanctioned works across milestone states</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anCompletionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Grid 2: District Comparison & Category Distribution -->
+                <section class="dashboard-grid-2col">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">3. District Expenditure Performance</h2>
+                                <p class="card-subtitle">Total cumulative expenditure incurred per district (₹ Cr)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anDistrictCompChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">4. Sector / Category Allocation</h2>
+                                <p class="card-subtitle">Share of funds dedicated to key development priority sectors</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Grid 3: Monthly Expenditure, Delayed Projects & Risk Distribution -->
+                <section class="dashboard-grid-half">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">5. 12-Month Expenditure Velocity</h2>
+                                <p class="card-subtitle">Monthly bill payments submitted for CAG audit</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anMonthlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">6. Risk Level Portfolio Distribution</h2>
+                                <p class="card-subtitle">AI & SLA anomaly risk categorization across portfolio</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall">
+                                <canvas id="anRiskChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/analytics.js"></script>
+</body>
+</html>

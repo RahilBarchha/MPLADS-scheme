@@ -1,0 +1,261 @@
+/* ==============================================================================
+   MPLADS Monitoring & Analytics Platform - Dashboard Styles
+   KPI Cards Grid, Chart Layouts, Alert Stream & Watchlist Tables
+   ============================================================================== */
+
+/* ==============================================================================
+   KPI CARDS GRID (9 Essential MPLADS Metrics)
+   ============================================================================== */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+}
+
+.kpi-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-600);
+}
+
+/* Specific Accent Tops for KPI Cards */
+.kpi-card.accent-primary::before { background-color: var(--primary-600); }
+.kpi-card.accent-saffron::before { background-color: var(--accent-saffron); }
+.kpi-card.accent-success::before { background-color: var(--success-500); }
+.kpi-card.accent-warning::before { background-color: var(--warning-500); }
+.kpi-card.accent-danger::before  { background-color: var(--danger-500); }
+.kpi-card.accent-info::before    { background-color: var(--info-500); }
+
+.kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.kpi-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+}
+
+.kpi-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background-color: var(--primary-50);
+    color: var(--primary-700);
+}
+
+.kpi-icon-wrap.saffron { background-color: #fff7ed; color: var(--accent-saffron); }
+.kpi-icon-wrap.success { background-color: var(--success-50); color: var(--success-700); }
+.kpi-icon-wrap.warning { background-color: #fffbeb; color: var(--warning-700); }
+.kpi-icon-wrap.danger  { background-color: var(--danger-50); color: var(--danger-700); }
+.kpi-icon-wrap.info    { background-color: var(--info-100); color: var(--info-700); }
+
+.kpi-value-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    line-height: 1.1;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-900);
+    line-height: 1.1;
+    font-feature-settings: "tnum";
+    white-space: nowrap;
+}
+
+.kpi-unit {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+
+.kpi-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border-top: 1px dashed var(--border-color);
+    padding-top: var(--space-2);
+}
+
+.kpi-trend {
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+.kpi-trend.positive { color: var(--success-700); }
+.kpi-trend.negative { color: var(--danger-700); }
+
+/* ==============================================================================
+   CHART WIDGETS GRID
+   ============================================================================== */
+.dashboard-grid-2col {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-6);
+}
+
+.dashboard-grid-half {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+}
+
+.chart-container-tall {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+.chart-container-compact {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+/* ==============================================================================
+   ALERT FEED ITEMS
+   ============================================================================== */
+.alert-feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    transition: all var(--transition-fast);
+}
+
+.alert-item:hover {
+    background-color: var(--bg-surface-raised);
+    border-color: var(--border-strong);
+}
+
+.alert-item.severity-critical {
+    border-left: 4px solid var(--danger-500);
+    background-color: #fef2f2;
+}
+
+.alert-item.severity-high {
+    border-left: 4px solid var(--accent-saffron);
+    background-color: #fff7ed;
+}
+
+.alert-item.severity-medium {
+    border-left: 4px solid var(--warning-500);
+    background-color: #fffbeb;
+}
+
+.alert-item.severity-low {
+    border-left: 4px solid var(--info-500);
+    background-color: #eff6ff;
+}
+
+.alert-icon {
+    font-size: 1.1rem;
+    margin-top: 2px;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.alert-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.alert-time {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.alert-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.alert-meta-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--primary-700);
+    margin-top: 4px;
+    display: inline-block;
+}
+
+/* ==============================================================================
+   DELAYED PROJECTS WATCHLIST
+   ============================================================================== */
+.delay-pill {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}

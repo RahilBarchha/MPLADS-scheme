@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Portal Access & Induction | MPLADS MoSPI</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css?v=4.5">
+    <link rel="stylesheet" href="../css/components.css?v=4.5">
+    <link rel="stylesheet" href="../css/responsive.css?v=4.5">
+
+    <style>
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #050e1d;
+            padding: var(--space-6) var(--space-4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-bg-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(2, 132, 199, 0.25);
+            border: 1.5px solid rgba(56, 189, 248, 0.35);
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #0a1f38 0%, #0f2e59 100%);
+            color: #ffffff;
+            padding: 24px 28px;
+            text-align: center;
+            border-bottom: 3px solid #f97316;
+            position: relative;
+        }
+
+        /* High-Contrast Tab Switcher */
+        .auth-nav-tabs {
+            display: flex;
+            background: #08162b;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.25);
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 14px 16px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .auth-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .auth-tab-btn.active {
+            color: #38bdf8 !important;
+            background: #0e2444 !important;
+            border-bottom: 3px solid #38bdf8 !important;
+            font-weight: 700 !important;
+            box-shadow: inset 0 -2px 10px rgba(56, 189, 248, 0.2);
+        }
+
+        .login-body {
+            padding: 24px 28px;
+        }
+
+        /* Form Labels & Helpers Visibility inside Dark Card */
+        .login-card .form-label {
+            color: #f8fafc !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            margin-bottom: 6px !important;
+            letter-spacing: 0.01em;
+            display: block;
+        }
+
+        .login-card .form-helper {
+            color: #94a3b8 !important;
+            font-size: 0.78rem !important;
+            margin-top: 5px !important;
+            display: block;
+            line-height: 1.35;
+        }
+
+        /* Inputs & Selects inside Dark Card */
+        .login-card .form-input,
+        .login-card .form-select {
+            background-color: #0b1d36 !important;
+            color: #ffffff !important;
+            border: 1.5px solid #233b5d !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            font-size: 0.88rem !important;
+            transition: all 0.2s ease;
+        }
+
+        .login-card .form-input:focus,
+        .login-card .form-select:focus {
+            outline: none !important;
+            border-color: #38bdf8 !important;
+            background-color: #0e2547 !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35) !important;
+        }
+
+        .login-card .form-input::placeholder {
+            color: #64748b !important;
+        }
+
+        .login-card .form-select option {
+            background-color: #0b1d36;
+            color: #ffffff;
+        }
+
+        /* High Visibility Sign In Submit Button */
+        #loginSubmitBtn {
+            background: linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%) !important;
+            color: #ffffff !important;
+            border: 1.5px solid #38bdf8 !important;
+            font-size: 0.98rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.02em;
+            padding: 13px 24px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        #loginSubmitBtn:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #1e40af 100%) !important;
+            box-shadow: 0 8px 25px rgba(2, 132, 199, 0.65) !important;
+            transform: translateY(-1px);
+        }
+
+        #loginSubmitBtn:active {
+            transform: translateY(0);
+        }
+
+        /* High Visibility Register & Induction Submit Button */
+        #regSubmitBtn {
+            background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+            color: #ffffff !important;
+            border: 1.5px solid #34d399 !important;
+            font-size: 0.98rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.02em;
+            padding: 13px 24px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        #regSubmitBtn:hover {
+            background: linear-gradient(135deg, #047857 0%, #0f766e 100%) !important;
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.65) !important;
+            transform: translateY(-1px);
+        }
+
+        #regSubmitBtn:active {
+            transform: translateY(0);
+        }
+
+        .login-card label {
+            color: #e2e8f0;
+        }
+
+        .tab-content-panel {
+            display: none;
+        }
+
+        .tab-content-panel.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-error {
+            background-color: #450a0a;
+            border: 1.5px solid #ef4444;
+            color: #fecaca;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.84rem;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .login-success {
+            background-color: #052e16;
+            border: 1.5px solid #22c55e;
+            color: #bbf7d0;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.84rem;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .password-field-wrap {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: #94a3b8;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .password-toggle-btn:hover {
+            color: #ffffff;
+        }
+
+        .incumbent-banner {
+            background: #0f2b4c;
+            border: 1px solid #38bdf8;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
+            color: #e0f2fe;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="login-wrapper">
+        <canvas id="ghostFibersCanvas" class="login-bg-canvas"></canvas>
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div style="font-size:2.4rem;margin-bottom:6px;">🏛️</div>
+                <h1 style="font-size:1.35rem;font-weight:700;color:#ffffff;margin:0;">MPLADS Central Governance Gateway</h1>
+                <p style="font-size:0.78rem;color:#94a3b8;margin-top:4px;">Ministry of Statistics and Programme Implementation • Govt of India</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-nav-tabs">
+                <button type="button" class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">
+                    🔑 Officer Sign In
+                </button>
+                <button type="button" class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')">
+                    📝 Induction & Succession Registration
+                </button>
+            </div>
+
+            <div class="login-body">
+                <!-- Notifications -->
+                <div class="login-error" id="authErrorMessage"></div>
+                <div class="login-success" id="authSuccessMessage"></div>
+
+                <!-- ============================================================
+                     TAB 1: SECURE OFFICER LOGIN
+                     ============================================================ -->
+                <div class="tab-content-panel active" id="panelLogin">
+                    <!-- Official Access Protocol Banner (No shortcuts, registration required) -->
+                    <div style="background:rgba(15,30,55,0.7);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="font-size:0.82rem;color:#cbd5e1;line-height:1.4;">
+                            🏛️ <strong>Official Authentication:</strong> First-time officer? You must complete induction registration before logging in.
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchAuthTab('register')" style="white-space:nowrap;font-size:0.78rem;padding:6px 12px;background:#0369a1;color:#ffffff;border:none;border-radius:6px;cursor:pointer;">
+                            Register First →
+                        </button>
+                    </div>
+
+                    <form id="loginForm" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="loginEmail">Official Gov Email or Officer ID</label>
+                            <input type="text" id="loginEmail" class="form-input" placeholder="e.g. dm.varanasi@nic.in or OFF-VNS-DM-01" required autocomplete="username">
+                            <span class="form-helper">Enter official NIC / GOV email address or Cadre Officer ID.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="loginPassword">Confidential Password</label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="loginPassword" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePwdVisibility('loginPassword', this)" title="Toggle password visibility">👁️</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:18px;font-size:0.82rem;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="rememberMe" checked>
+                                <span>Remember this workstation</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="loginSubmitBtn">
+                            Sign In to Secure Portal
+                        </button>
+                    </form>
+
+                    <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.84rem;color:#94a3b8;">
+                        Assigned to a new district or taking over charge?  
+                        <a href="javascript:void(0)" onclick="switchAuthTab('register')" style="color:#38bdf8;font-weight:700;display:inline-block;margin-top:6px;font-size:0.86rem;text-decoration:none;">
+                            📝 Register Official Induction / Succession →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                     TAB 2: INDUCTION & SUCCESSION REGISTRATION
+                     ============================================================ -->
+                <div class="tab-content-panel" id="panelRegister">
+                    <form id="registerForm" novalidate>
+                        <div style="background:rgba(14, 34, 61, 0.85);border:1px solid #1e4976;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:0.8rem;color:#e2e8f0;line-height:1.45;">
+                            <strong style="color:#38bdf8;">🛡️ Cadre Succession Protocol:</strong> Each district maintains four distinct non-colliding statutory roles. If joining as a successor due to a predecessor's resignation or transfer, the former incumbent will be officially relieved upon your induction.
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group">
+                                <label class="form-label" for="regDistrict">Assigned District *</label>
+                                <select id="regDistrict" class="form-select" required onchange="checkIncumbent()">
+                                    <option value="">-- Select District --</option>
+                                    <option value="Varanasi">Varanasi</option>
+                                    <option value="Gorakhpur">Gorakhpur</option>
+                                    <option value="Prayagraj">Prayagraj</option>
+                                    <option value="Lucknow">Lucknow</option>
+                                    <option value="Ayodhya">Ayodhya</option>
+                                    <option value="Kanpur Nagar">Kanpur Nagar</option>
+                                    <option value="Mirzapur">Mirzapur</option>
+                                    <option value="Jaunpur">Jaunpur</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="regRole">Designated Role *</label>
+                                <select id="regRole" class="form-select" required onchange="checkIncumbent()">
+                                    <option value="">-- Select Role --</option>
+                                    <option value="District Magistrate & Nodal Officer">District Magistrate (DM & Nodal)</option>
+                                    <option value="Member of Parliament">Member of Parliament (Hon. MP)</option>
+                                    <option value="Executive Engineer & Implementing Agency">Executive Engineer (IA / PWD)</option>
+                                    <option value="District Planning Officer & SNA Lead">District Planning Officer (DPO / SNA)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Incumbent Alert Banner -->
+                        <div class="incumbent-banner" id="incumbentBanner"></div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="regSuccessionType">Induction / Succession Type *</label>
+                            <select id="regSuccessionType" class="form-select" required>
+                                <option value="resignation" selected>Replacement due to Resignation of Incumbent</option>
+                                <option value="transfer">Replacement due to Administrative Cadre Transfer</option>
+                                <option value="new">New Induction / Additional Charge</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="regName">Officer Full Name (with Title) *</label>
+                            <input type="text" id="regName" class="form-input" placeholder="e.g. Shri Rajeshwar Nath Yadav, IAS" required>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group">
+                                <label class="form-label" for="regEmail">Official NIC/Gov Email *</label>
+                                <input type="email" id="regEmail" class="form-input" placeholder="e.g. rajeshwar.yadav@nic.in" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regContact">Official Mobile *</label>
+                                <input type="tel" id="regContact" class="form-input" placeholder="+91-9450000000" required>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group">
+                                <label class="form-label" for="regOfficerId">Officer / Cadre ID</label>
+                                <input type="text" id="regOfficerId" class="form-input" placeholder="e.g. UP-IAS-2022-094">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regJoiningOrder">Govt Order / Notification Ref</label>
+                                <input type="text" id="regJoiningOrder" class="form-input" placeholder="e.g. GO-UP-PERS/2026/782">
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group">
+                                <label class="form-label" for="regPassword">Create Secure Password *</label>
+                                <div class="password-field-wrap">
+                                    <input type="password" id="regPassword" class="form-input" placeholder="Min 6 chars" required minlength="6">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePwdVisibility('regPassword', this)">👁️</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regConfirmPassword">Confirm Password *</label>
+                                <div class="password-field-wrap">
+                                    <input type="password" id="regConfirmPassword" class="form-input" placeholder="Re-enter password" required minlength="6">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePwdVisibility('regConfirmPassword', this)">👁️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="regSubmitBtn">
+                            Complete Induction & Access Portal
+                        </button>
+                    </form>
+
+                    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.84rem;color:#94a3b8;">
+                        Already registered as an active officer?  
+                        <a href="javascript:void(0)" onclick="switchAuthTab('login')" style="color:#38bdf8;font-weight:700;display:inline-block;margin-top:6px;font-size:0.86rem;text-decoration:none;">
+                            🔑 Back to Sign In →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../data/mock-data.js?v=4.5"></script>
+    <script src="../data/india-districts.js?v=4.5"></script>
+    <script src="../components/GhostFibers/ghost-fibers.js?v=4.5"></script>
+    <script src="../js/config.js?v=4.5"></script>
+    <script src="../js/api.js?v=4.5"></script>
+    <script src="../js/auth.js?v=4.5"></script>
+</body>
+</html>

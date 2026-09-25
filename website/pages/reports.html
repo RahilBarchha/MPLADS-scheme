@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & MPR | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item active">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">📑 Statutory Reports & MPR Generation</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Official Dossiers</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Officer</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Report Generator Card -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Statutory Report Compiler</h2>
+                            <p class="card-subtitle">Generate official CAG audit sheets, MPR Monthly Progress, and Form GFR-12C</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="reportGenerateForm">
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
+                                <div class="form-group">
+                                    <label class="form-label" for="rptType">Report Type *</label>
+                                    <select id="rptType" class="form-select" required>
+                                        <option value="Monthly Progress Report (MPR)">Monthly Progress Report (MPR)</option>
+                                        <option value="Utilization Certificate (Form GFR-12C)">Utilization Certificate (Form GFR-12C)</option>
+                                        <option value="Sectoral Fund Audit Packet">Sectoral Fund Audit Packet</option>
+                                        <option value="Delayed Projects & SLA Escalation Dossier">Delayed Projects & SLA Escalation Dossier</option>
+                                        <option value="District Treasury Expenditure Summary">District Treasury Expenditure Summary</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="rptFY">Financial Year *</label>
+                                    <select id="rptFY" class="form-select" required>
+                                        <option value="2025-26">FY 2025–26</option>
+                                        <option value="2024-25">FY 2024–25</option>
+                                        <option value="2023-24">FY 2023–24</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="rptDistrict">District Scope *</label>
+                                    <select id="rptDistrict" class="form-select" required>
+                                        <option value="All Districts">All Districts (Consolidated)</option>
+                                        <option value="Varanasi">Varanasi</option>
+                                        <option value="Gorakhpur">Gorakhpur</option>
+                                        <option value="Prayagraj">Prayagraj</option>
+                                        <option value="Lucknow">Lucknow</option>
+                                        <option value="Ayodhya">Ayodhya</option>
+                                        <option value="Kanpur Nagar">Kanpur Nagar</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="rptDateRange">Audit Cut-off Date</label>
+                                    <input type="date" id="rptDateRange" class="form-input" value="2026-09-21">
+                                </div>
+                            </div>
+
+                            <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                <button type="submit" class="btn btn-primary" id="btnGenerateReport">⚙️ Compile & Generate Report</button>
+                                <button type="button" class="btn btn-secondary" onclick="exportReportsSummaryCSV()">📥 Export Summary CSV</button>
+                                <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Print View</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Reports Log Table -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Generated Official Documents & Audits</h2>
+                            <p class="card-subtitle">Repository of digitally countersigned files ready for download</p>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Report ID</th>
+                                        <th>Report Type & Title</th>
+                                        <th>Generated Timestamp</th>
+                                        <th>Generated By</th>
+                                        <th>Status</th>
+                                        <th>Format</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentReportsTableBody">
+                                    <!-- Populated dynamically by reports.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/reports.js"></script>
+</body>
+</html>

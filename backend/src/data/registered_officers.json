@@ -1,0 +1,95 @@
+[
+  {
+    "id": "OFF-JAU-DM-221",
+    "name": "Smt. Ananya Sen, IAS",
+    "role": "District Magistrate & Nodal Officer",
+    "roleCode": "DM",
+    "district": "Jaunpur",
+    "state": "Uttar Pradesh",
+    "email": "dm.ananya@nic.in",
+    "password": "jaunpur@DM2026",
+    "contact": "+91-9454499992",
+    "avatar": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=160&h=160&q=80",
+    "joiningOrder": "GO-JAU-PERS/2026/467",
+    "appointedDate": "2026-09-22",
+    "status": "ACTIVE",
+    "successionDetails": {
+      "predecessorName": "Shri Ravindra Kumar Mander, IAS",
+      "predecessorId": "OFF-JNP-DM-01",
+      "reason": "Relieved due to Resignation of Incumbent"
+    }
+  },
+  {
+    "id": "OFF-MIR-DM-203",
+    "name": "Vikramaditya Verma, IAS",
+    "role": "District Magistrate & Nodal Officer",
+    "roleCode": "DM",
+    "district": "Mirzapur",
+    "state": "Uttar Pradesh",
+    "email": "dm.vikram@nic.in",
+    "password": "mirzapur@DM2026",
+    "contact": "+91-9454499991",
+    "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=160&h=160&q=80",
+    "joiningOrder": "GO-MIR-PERS/2026/404",
+    "appointedDate": "2026-09-22",
+    "status": "ACTIVE",
+    "successionDetails": {
+      "predecessorName": "Smt. Priyanka Niranjan, IAS",
+      "predecessorId": "OFF-MZP-DM-01",
+      "reason": "Relieved due to Resignation of Incumbent"
+    }
+  },
+  {
+    "id": "OFF-VAD-DM-095",
+    "name": "Shri R. K. Patel, IAS",
+    "role": "District Magistrate & Nodal Officer",
+    "roleCode": "DM",
+    "district": "Vadodara",
+    "state": "Gujarat",
+    "email": "collector.vadodara@nic.in",
+    "password": "VadodaraSecure#2026",
+    "contact": "+91-9426001234",
+    "joiningOrder": "GO-VAD-PERS/2026/095",
+    "appointedDate": "2026-09-22",
+    "status": "ACTIVE",
+    "successionDetails": null
+  },
+  {
+    "id": "OFF-KAN-DM-724",
+    "name": "Shri R. P. Maurya, IAS",
+    "role": "District Magistrate & Nodal Officer",
+    "roleCode": "DM",
+    "district": "Kanpur Nagar",
+    "state": "Uttar Pradesh",
+    "email": "collector.kanpur.9657@nic.in",
+    "password": "KanpurSuperSecret#2026",
+    "contact": "+91-9450001234",
+    "joiningOrder": "GO-KAN-PERS/2026/246",
+    "appointedDate": "2026-09-22",
+    "status": "ACTIVE",
+    "successionDetails": {
+      "predecessorName": "Shri Jitendra Pratap Singh, IAS",
+      "predecessorId": "OFF-KNP-DM-01",
+      "reason": "Relieved due to Resignation of Incumbent"
+    }
+  },
+  {
+    "id": "OFF-GOR-DM-425",
+    "name": "Shri Anand Shekhawat, IAS",
+    "role": "District Magistrate & Nodal Officer",
+    "roleCode": "DM",
+    "district": "Gorakhpur",
+    "state": "Uttar Pradesh",
+    "email": "anand.shekhawat@nic.in",
+    "password": "GorakhpurSecretPass2026",
+    "contact": "+91-9454419999",
+    "joiningOrder": "GO-GOR-PERS/2026/397",
+    "appointedDate": "2026-09-22",
+    "status": "ACTIVE",
+    "successionDetails": {
+      "predecessorName": "Krishna Mohan Singh, IAS",
+      "predecessorId": "OFF-GKP-DM-01",
+      "reason": "Relieved due to Resignation of Incumbent"
+    }
+  }
+]

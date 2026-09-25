@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funds & Budget | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="../assets/chart.umd.min.js"></script>
+
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item active">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">💰 Treasury Funds, Allocations & Expenditure</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Financial Accounts</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openAddTransactionModal()" id="openAddTxnBtn">➕ Add Transaction</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportFundsCSV()" id="exportCsvBtn">📥 Export CSV</button>
+                    </div>
+
+                    <div class="user-profile" role="button" tabindex="0" title="Click to manage Officer Profile & Perspective">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Dr. R. K. Sharma, IAS</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Print-Only Official Header -->
+                <div class="print-only-header">
+                    <h2>MPLADS Statutory Treasury & Financial Expenditure Dossier</h2>
+                    <div class="print-meta">
+                        <span>Ministry of Statistics and Programme Implementation • Government of India</span>
+                        <span id="printReportTimestamp">Generated: 2026-09-21</span>
+                    </div>
+                </div>
+
+                <!-- 7 Financial KPI Cards -->
+                <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <!-- 1. Total Allocation -->
+                    <div class="kpi-card accent-primary">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Total Allocation</span>
+                            <div class="kpi-icon-wrap">🏛️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiAllocation">₹0.00</span>
+                            <span class="kpi-unit">Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Sanctioned Budget</span>
+                            <span class="badge badge-neutral" id="fundsKpiAllocationSub">Cumulative</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Total Released -->
+                    <div class="kpi-card accent-info">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Total Released</span>
+                            <div class="kpi-icon-wrap info">💳</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiReleased">₹0.00</span>
+                            <span class="kpi-unit">Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Disbursed Tranches</span>
+                            <span class="kpi-trend positive" id="fundsKpiReleasedSub">0.0%</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Total Expenditure -->
+                    <div class="kpi-card accent-success">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Total Expenditure</span>
+                            <div class="kpi-icon-wrap success">📈</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiExpenditure">₹0.00</span>
+                            <span class="kpi-unit">Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Verified Vouchers</span>
+                            <span class="kpi-trend positive" id="fundsKpiExpenditureSub">0.0% of Rel.</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Available Balance -->
+                    <div class="kpi-card accent-warning">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Available Balance</span>
+                            <div class="kpi-icon-wrap warning">🏦</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiBalance">₹0.00</span>
+                            <span class="kpi-unit">Cr</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Unspent Allocation</span>
+                            <span id="fundsKpiBalanceSub">0.0% unspent</span>
+                        </div>
+                    </div>
+
+                    <!-- 5. Utilization % -->
+                    <div class="kpi-card accent-saffron">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Utilization Rate</span>
+                            <div class="kpi-icon-wrap saffron">🎯</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiUtilization">0.0%</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Spent vs Allocated</span>
+                            <span class="badge badge-success" id="fundsKpiUtilizationSub">Active</span>
+                        </div>
+                    </div>
+
+                    <!-- 6. Number of Funded Works -->
+                    <div class="kpi-card accent-info">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Funded Works</span>
+                            <div class="kpi-icon-wrap info">🏗️</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiFundedWorks">0</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Sanctioned Projects</span>
+                            <span class="badge badge-neutral" id="fundsKpiFundedWorksSub">Active Portfolio</span>
+                        </div>
+                    </div>
+
+                    <!-- 7. Number of Transactions -->
+                    <div class="kpi-card accent-primary">
+                        <div class="kpi-top">
+                            <span class="kpi-title">Ledger Transactions</span>
+                            <div class="kpi-icon-wrap">📑</div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="fundsKpiTransactions">0</span>
+                        </div>
+                        <div class="kpi-footer">
+                            <span>Treasury Entries</span>
+                            <span class="badge badge-neutral" id="fundsKpiTransactionsSub">PFMS Synced</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Financial Visual Charts - Row 1 -->
+                <section class="dashboard-grid-2col">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Allocation vs Release vs Expenditure</h2>
+                                <p class="card-subtitle">Constituency fund flow lifecycle comparison (₹ Crore)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:290px;">
+                                <canvas id="allocationVsReleaseChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Monthly Expenditure Velocity</h2>
+                                <p class="card-subtitle">Verified bill settlements across historical 12-month periods (₹ Cr)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:290px;">
+                                <canvas id="monthlyFundsExpenditureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Financial Visual Charts - Row 2 -->
+                <section class="dashboard-grid-2col">
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">District Utilization Efficiency</h2>
+                                <p class="card-subtitle">Expenditure as percentage of released funds across districts</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:280px;">
+                                <canvas id="districtUtilizationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gov-card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Category-wise Sectoral Expenditure</h2>
+                                <p class="card-subtitle">Capital disbursement distributed across public development sectors</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-tall" style="position:relative;height:280px;">
+                                <canvas id="categoryExpenditureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Work Financial Summary Section (Requirement 13) -->
+                <div class="gov-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Work-wise Financial Summary & Utilization Status</h2>
+                            <p class="card-subtitle">Comprehensive financial breakdown, balance availability, and project financial health status</p>
+                        </div>
+                        <span class="badge badge-info" id="workSummaryCountBadge">16 Works Tracked</span>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Work ID</th>
+                                        <th>Work Name & Category</th>
+                                        <th>District</th>
+                                        <th>Approved (₹ L)</th>
+                                        <th>Released (₹ L)</th>
+                                        <th>Expenditure (₹ L)</th>
+                                        <th>Balance (₹ L)</th>
+                                        <th>Utilization</th>
+                                        <th>Financial Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="workFinancialSummaryTableBody">
+                                    <!-- Populated dynamically by funds.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Multi-Criteria Financial Filter Bar (Requirement 3) -->
+                <section class="filter-bar" style="flex-wrap: wrap; gap: 10px;">
+                    <!-- Search Input -->
+                    <div class="filter-item" style="flex: 2; min-width: 240px;">
+                        <input type="text" id="fundsSearchInput" class="form-input" placeholder="🔍 Search Txn ID, Work ID, Title, District, Reference...">
+                    </div>
+
+                    <!-- Financial Year -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <select id="fundsFilterFY" class="form-select">
+                            <option value="ALL">All Financial Years</option>
+                            <option value="2025-26">FY 2025–26</option>
+                            <option value="2024-25">FY 2024–25</option>
+                            <option value="2023-24">FY 2023–24</option>
+                        </select>
+                    </div>
+
+                    <!-- District -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <select id="fundsFilterDistrict" class="form-select">
+                            <option value="ALL">All Districts</option>
+                            <option value="Varanasi">Varanasi</option>
+                            <option value="Gorakhpur">Gorakhpur</option>
+                            <option value="Prayagraj">Prayagraj</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Ayodhya">Ayodhya</option>
+                            <option value="Kanpur Nagar">Kanpur Nagar</option>
+                            <option value="Mirzapur">Mirzapur</option>
+                            <option value="Jaunpur">Jaunpur</option>
+                        </select>
+                    </div>
+
+                    <!-- Constituency -->
+                    <div class="filter-item" style="flex: 1; min-width: 150px;">
+                        <select id="fundsFilterConstituency" class="form-select">
+                            <option value="ALL">All Constituencies</option>
+                        </select>
+                    </div>
+
+                    <!-- Work Selector -->
+                    <div class="filter-item" style="flex: 1.2; min-width: 160px;">
+                        <select id="fundsFilterWork" class="form-select">
+                            <option value="ALL">All Works</option>
+                        </select>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="filter-item" style="flex: 1.2; min-width: 160px;">
+                        <select id="fundsFilterCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water & Sanitation</option>
+                            <option value="Education & Digital Labs">Education & Digital Labs</option>
+                            <option value="Rural Roads & Bridges">Rural Roads & Bridges</option>
+                            <option value="Public Health Infrastructure">Public Health Infrastructure</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy & Lighting</option>
+                            <option value="Community Assets & Skills">Community Assets & Skills</option>
+                        </select>
+                    </div>
+
+                    <!-- Transaction Type -->
+                    <div class="filter-item" style="flex: 1; min-width: 140px;">
+                        <select id="fundsFilterType" class="form-select">
+                            <option value="ALL">All Types</option>
+                            <option value="ALLOCATION">ALLOCATION</option>
+                            <option value="RELEASE">RELEASE</option>
+                            <option value="EXPENDITURE">EXPENDITURE</option>
+                            <option value="REFUND">REFUND</option>
+                            <option value="ADJUSTMENT">ADJUSTMENT</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="filter-item" style="display:flex;align-items:center;gap:6px;min-width:260px;">
+                        <input type="date" id="fundsFilterDateFrom" class="form-input" style="padding:6px 8px;font-size:0.8rem;" title="From Date">
+                        <span style="font-size:0.75rem;color:var(--text-muted);">to</span>
+                        <input type="date" id="fundsFilterDateTo" class="form-input" style="padding:6px 8px;font-size:0.8rem;" title="To Date">
+                    </div>
+
+                    <!-- Filter Action Buttons -->
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary btn-sm" id="fundsApplyFilterBtn">Apply Filters</button>
+                        <button class="btn btn-secondary btn-sm" id="fundsResetFilterBtn">Reset Filters</button>
+                    </div>
+                </section>
+
+                <!-- Transactions Table Card -->
+                <div class="gov-card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h2 class="card-title">Treasury Transaction Records & PFMS Vouchers</h2>
+                            <p class="card-subtitle">Real-time public financial ledger disbursements with sorting and pagination</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <!-- Integrated Transaction Log Live Search Engine -->
+                            <div class="txn-search-wrap" style="position:relative;display:flex;align-items:center;min-width:270px;">
+                                <span style="position:absolute;left:10px;color:var(--text-muted);font-size:0.85rem;pointer-events:none;">🔍</span>
+                                <input type="text" id="txnLogCardSearchInput" class="form-input" placeholder="Search Txn ID, Work, PFMS, District..." style="padding:6px 28px 6px 30px;font-size:0.8rem;height:32px;width:100%;border-radius:6px;border:1px solid var(--border-color);">
+                                <button type="button" id="txnLogClearSearchBtn" style="position:absolute;right:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;display:none;padding:2px 4px;" title="Clear Search">✕</button>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+                                <label for="fundsRowsPerPage">Rows per page:</label>
+                                <select id="fundsRowsPerPage" class="form-select" style="padding:4px 8px;font-size:0.8rem;width:auto;">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                            <span class="badge badge-info" id="fundsTransactionCountBadge">0 Transactions</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table class="gov-table" id="fundsTransactionsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="sortTransactions('id')">
+                                            Transaction ID <span class="sort-indicator" id="sort-icon-id">↕</span>
+                                        </th>
+                                        <th>Work ID</th>
+                                        <th>Work Name</th>
+                                        <th>District</th>
+                                        <th class="sortable" onclick="sortTransactions('type')">
+                                            Type <span class="sort-indicator" id="sort-icon-type">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortTransactions('amountLakhs')">
+                                            Amount (₹ L) <span class="sort-indicator" id="sort-icon-amountLakhs">↕</span>
+                                        </th>
+                                        <th class="sortable" onclick="sortTransactions('date')">
+                                            Date <span class="sort-indicator" id="sort-icon-date">↕</span>
+                                        </th>
+                                        <th>Reference</th>
+                                        <th class="sortable" onclick="sortTransactions('status')">
+                                            Status <span class="sort-indicator" id="sort-icon-status">↕</span>
+                                        </th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <!-- Populated dynamically by funds.js -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Footer -->
+                        <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid var(--border-color);">
+                            <span class="pagination-info" id="fundsPaginationInfo" style="font-size: 0.85rem; color: var(--text-secondary);">Showing 0 of 0 transactions</span>
+                            <div class="pagination-controls" id="fundsPaginationControls" style="display: flex; gap: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal (Requirement 9) -->
+    <div class="modal-overlay" id="transactionDetailsModal">
+        <div class="modal-container" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Treasury Transaction Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('transactionDetailsModal')">✕</button>
+            </div>
+            <div class="modal-body" id="transactionDetailsModalBody">
+                <!-- Dynamically populated by funds.js -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('transactionDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal (Requirement 10) -->
+    <div class="modal-overlay" id="addTransactionModal">
+        <div class="modal-container" style="max-width: 600px;">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title">Record New Treasury Transaction</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Demo Simulation: Updates in-memory ledger and KPIs</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeModal('addTransactionModal')">✕</button>
+            </div>
+            <form id="addTransactionForm">
+                <div class="modal-body">
+                    <div id="addTxnError" class="form-error" style="display:none;background:#fee2e2;color:#991b1b;padding:8px 12px;border-radius:6px;margin-bottom:14px;font-size:0.82rem;"></div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="addTxnWork">Target Work *</label>
+                        <select id="addTxnWork" class="form-select" required>
+                            <option value="">Select Associated Work...</option>
+                        </select>
+                        <div id="addTxnWorkBudgetHint" style="display:none;font-size:0.75rem;color:var(--text-muted);margin-top:4px;padding:6px 10px;background:var(--bg-surface-raised);border-radius:4px;"></div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="addTxnType">Transaction Type *</label>
+                            <select id="addTxnType" class="form-select" required>
+                                <option value="EXPENDITURE">EXPENDITURE</option>
+                                <option value="RELEASE">RELEASE</option>
+                                <option value="ALLOCATION">ALLOCATION</option>
+                                <option value="REFUND">REFUND</option>
+                                <option value="ADJUSTMENT">ADJUSTMENT</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addTxnAmount">Amount (₹ Lakhs) *</label>
+                            <input type="number" step="0.01" min="0.01" id="addTxnAmount" class="form-input" placeholder="e.g. 25.50" required>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="addTxnDate">Transaction Date *</label>
+                            <input type="date" id="addTxnDate" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addTxnReference">PFMS / Treasury Reference *</label>
+                            <input type="text" id="addTxnReference" class="form-input" placeholder="e.g. PFMS-VOUCHER-9210" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="addTxnDesc">Transaction Narrative / Purpose</label>
+                        <textarea id="addTxnDesc" class="form-textarea" rows="2" placeholder="Provide voucher disbursement justification or contractor milestone details..."></textarea>
+                    </div>
+
+                    <div style="font-size:0.75rem;color:var(--text-muted);background:#eff6ff;border:1px solid #bfdbfe;padding:8px 10px;border-radius:6px;">
+                        ℹ️ <strong>Financial Integrity Check:</strong> Released amounts cannot exceed Approved Sanctions. Expenditure vouchers cannot exceed Released Funds. Amounts must be positive numbers.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addTransactionModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Record Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/funds.js"></script>
+</body>
+</html>

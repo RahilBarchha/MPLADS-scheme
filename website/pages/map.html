@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS Spatial Map | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Local Leaflet Assets with CDN Fallback -->
+    <link rel="stylesheet" href="../assets/leaflet.css" />
+    <script src="../assets/leaflet.js"></script>
+
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+
+    <style>
+        /* High-priority Leaflet Zoom Buttons & Spatial Controls Styling */
+        .leaflet-container {
+            font-family: var(--font-sans), -apple-system, sans-serif !important;
+            font-size: 13px !important;
+            background: #e2e8f0;
+            outline: none;
+        }
+        .leaflet-control-zoom {
+            border: 2px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2) !important;
+            overflow: hidden !important;
+            margin-top: 16px !important;
+            margin-left: 16px !important;
+            z-index: 1000 !important;
+            pointer-events: auto !important;
+            background: #ffffff !important;
+        }
+        .leaflet-control-zoom a,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 38px !important;
+            height: 38px !important;
+            line-height: 38px !important;
+            font-size: 22px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            background-color: #ffffff !important;
+            text-align: center !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            user-select: none !important;
+            transition: all 0.15s ease !important;
+        }
+        .leaflet-control-zoom-in {
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        .leaflet-control-zoom a:hover,
+        .leaflet-control-zoom-in:hover,
+        .leaflet-control-zoom-out:hover {
+            background-color: #f1f5f9 !important;
+            color: #0284c7 !important;
+        }
+        .leaflet-control-zoom a:active,
+        .leaflet-control-zoom-in:active,
+        .leaflet-control-zoom-out:active {
+            background-color: #e2e8f0 !important;
+            transform: scale(0.95);
+        }
+        .map-toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Segmented Layer Switcher (Toolbar) */
+        .map-layer-switch-group {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            gap: 2px;
+        }
+        .btn-layer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+        .btn-layer-pill:hover {
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .btn-layer-pill.active {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+
+        /* Floating On-Map Satellite/Street Switcher */
+        .custom-layer-switcher-card {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+            padding: 3px;
+            gap: 3px;
+            margin-top: 14px;
+            margin-right: 14px;
+            overflow: hidden;
+        }
+        .map-layer-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .map-layer-pill-btn:hover {
+            background: #f1f5f9;
+            color: #0284c7;
+        }
+        .map-layer-pill-btn.active {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+        .layer-pill-icon {
+            font-size: 1rem;
+            line-height: 1;
+        }
+        .custom-satellite-control {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item active">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">🗺️ GIS Spatial Mapping & Geotagged Assets</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Spatial Distribution</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Officer</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Map Filters Bar -->
+                <section class="filter-bar">
+                    <div class="filter-item">
+                        <label class="form-label" for="mapFilterCategory" style="margin:0;font-size:0.75rem;">Category:</label>
+                        <select id="mapFilterCategory" class="form-select">
+                            <option value="ALL">All Categories</option>
+                            <option value="Drinking Water & Sanitation">Drinking Water</option>
+                            <option value="Education & Digital Labs">Education</option>
+                            <option value="Rural Roads & Bridges">Rural Roads</option>
+                            <option value="Public Health Infrastructure">Public Health</option>
+                            <option value="Renewable Energy & Lighting">Renewable Energy</option>
+                            <option value="Community Assets & Skills">Community Assets</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="mapFilterStatus" style="margin:0;font-size:0.75rem;">Status:</label>
+                        <select id="mapFilterStatus" class="form-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DELAYED">DELAYED</option>
+                            <option value="PENDING">PENDING</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="form-label" for="mapFilterRisk" style="margin:0;font-size:0.75rem;">Risk:</label>
+                        <select id="mapFilterRisk" class="form-select">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-left:auto;font-size:0.8rem;color:var(--text-muted);" id="mapActiveMarkersCount">
+                        Displaying 10 Geotagged Works
+                    </div>
+                </section>
+
+                <div class="gov-card" style="height: 640px; display:flex; flex-direction:column;">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2 class="card-title">Geospatial Distribution of Sanctioned Works</h2>
+                            <p class="card-subtitle">Click any pin marker to inspect work telemetries, progress, and risk rating</p>
+                        </div>
+                        <div class="map-toolbar-actions">
+                            <div class="map-layer-switch-group" role="group" aria-label="Map Layer Selection">
+                                <button type="button" class="btn-layer-pill active" id="btnLayerStreet" onclick="window.switchMapLayer('street')" title="Switch to Street / Road Map">
+                                    <span>🗺️</span>
+                                    <span>Street</span>
+                                </button>
+                                <button type="button" class="btn-layer-pill" id="btnLayerSatellite" onclick="window.switchMapLayer('satellite')" title="Switch to High-Resolution Satellite View">
+                                    <span>🛰️</span>
+                                    <span>Satellite</span>
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnMapZoomIn" onclick="window.zoomMapIn()" title="Zoom in to inspect works cluster" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:6px 12px;background:#ffffff;border:1px solid #cbd5e1;cursor:pointer;border-radius:6px;">
+                                <span style="font-size:1rem;color:#0284c7;">➕</span> Zoom In
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnMapZoomOut" onclick="window.zoomMapOut()" title="Zoom out to district overview" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:6px 12px;background:#ffffff;border:1px solid #cbd5e1;cursor:pointer;border-radius:6px;">
+                                <span style="font-size:1rem;color:#0284c7;">➖</span> Zoom Out
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnMapFitBounds" onclick="window.fitMapBounds()" title="Auto-frame all geotagged works" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:6px 12px;background:#ffffff;border:1px solid #cbd5e1;cursor:pointer;border-radius:6px;">
+                                <span style="font-size:0.95rem;">📍</span> Fit All Works
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0; flex:1; position:relative; min-height:560px;">
+                        <div id="mapContainer" style="height:560px; min-height:560px; width:100%;"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/map.js"></script>
+</body>
+</html>

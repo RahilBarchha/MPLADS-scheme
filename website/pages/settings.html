@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Settings | MPLADS Monitoring & Analytics Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            var s = localStorage.getItem('mplads_user_session') || sessionStorage.getItem('mplads_user_session');
+            if (!s) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/ai-copilot.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="gov-tricolor-stripe"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="national-emblem-badge">🏛️</div>
+                <div class="brand-text">
+                    <span class="brand-title">MPLADS Portal</span>
+                    <span class="brand-subtitle">MoSPI • Govt of India</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Modules</div>
+                <a href="../index.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="monitoring.html" class="nav-item">
+                    <span class="nav-icon">📡</span>
+                    <span>Monitoring</span>
+                </a>
+                <a href="works.html" class="nav-item">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Works</span>
+                </a>
+                <a href="funds.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Funds & Budget</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">18</span>
+                </a>
+
+                <div class="nav-section-title">Intelligence & GIS</div>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="map.html" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    <span>Map (GIS)</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </a>
+
+                <div class="nav-section-title">System</div>
+                <a href="settings.html" class="nav-item active">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span>Sign In / Auth</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="portal-version">
+                    <span>Platform v2.4</span>
+                    <span id="backendStatusBadge" class="badge badge-warning">⚡ Client Demo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 class="page-title">⚙️ Portal Settings & Administration</h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">MPLADS Central</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Configuration & Profile</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-profile" id="headerUserProfileBox">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="User Profile" class="user-avatar" id="headerUserAvatar">
+                        <div class="user-info">
+                            <span class="user-name" id="headerUserName">Officer</span>
+                            <span class="user-role" id="headerUserRole">District Nodal Officer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Navigation Tabs -->
+                <div class="gov-tabs">
+                    <button type="button" class="tab-button active" onclick="switchSettingsTab('tabProfile', this)">👤 User Profile</button>
+                    <button type="button" class="tab-button" onclick="switchSettingsTab('tabNotifications', this)">🔔 Notification Thresholds</button>
+                    <button type="button" class="tab-button" onclick="switchSettingsTab('tabAppPrefs', this)">🎛️ Application Preferences</button>
+                    <button type="button" class="tab-button" onclick="switchSettingsTab('tabSecurity', this)">🔒 Security & 2FA</button>
+                    <button type="button" class="tab-button" onclick="switchSettingsTab('tabAiConfig', this)">🤖 AI & LLM Engine</button>
+                    <button type="button" class="tab-button" onclick="switchSettingsTab('tabBackend', this)">🌐 Backend & Cloud API</button>
+                </div>
+
+                <!-- Tab 1: User Profile -->
+                <div class="tab-pane active" id="tabProfile">
+                    <div class="gov-card" style="max-width:800px;">
+                        <div class="card-header">
+                            <h2 class="card-title">Nodal Officer & Official Profile</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="profName">Full Name *</label>
+                                        <input type="text" id="profName" class="form-input" placeholder="Official Full Name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="profRole">Official Role / Designation *</label>
+                                        <input type="text" id="profRole" class="form-input" placeholder="Designated Role" required>
+                                    </div>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="profEmail">Official NIC / Gov Email *</label>
+                                        <input type="email" id="profEmail" class="form-input" placeholder="e.g. officer@nic.in" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="profPhone">Registered Mobile Phone</label>
+                                        <input type="tel" id="profPhone" class="form-input" placeholder="+91-XXXXXXXXXX">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="profDistrict">Assigned Parliamentary District Division</label>
+                                    <input type="text" id="profDistrict" class="form-input" readonly style="background:var(--bg-surface-raised);">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Save Profile Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Notification Thresholds -->
+                <div class="tab-pane" id="tabNotifications">
+                    <div class="gov-card" style="max-width:800px;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">AI Early Warning & SLA Alert Thresholds</h2>
+                                <p class="card-subtitle">Set triggering rules for automated administrative notices and telemetry flags</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="notificationSettingsForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="stagnationThreshold">Physical Work Stagnation Trigger (Days without progress log)</label>
+                                    <input type="number" id="stagnationThreshold" class="form-input" value="60" min="15" max="180">
+                                    <span class="form-helper">Triggers warning alert if no photo or progress milestone is logged for this duration.</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="expVelocityThreshold">Expenditure Velocity Stall Threshold (Days without voucher)</label>
+                                    <input type="number" id="expVelocityThreshold" class="form-input" value="90" min="30" max="240">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="digestFreq">Executive Digest Email Frequency</label>
+                                    <select id="digestFreq" class="form-select">
+                                        <option value="daily" selected>Daily Morning Digest (08:00 AM)</option>
+                                        <option value="weekly">Weekly Nodal Summary (Monday 09:00 AM)</option>
+                                        <option value="critical">Critical Anomaly Flags Real-Time Immediate</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;margin-top:6px;">
+                                        <input type="checkbox" id="smsAlerts" checked>
+                                        <span>Send SMS alerts to Nodal Officer on Critical SLA breaches (>180 Days)</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Update Trigger Thresholds</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Application Preferences -->
+                <div class="tab-pane" id="tabAppPrefs">
+                    <div class="gov-card" style="max-width:800px;">
+                        <div class="card-header">
+                            <h2 class="card-title">Portal Preferences & Layout Options</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="appPrefsForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="prefDefaultFY">Default Financial Year on Startup</label>
+                                    <select id="prefDefaultFY" class="form-select">
+                                        <option value="2025-26" selected>FY 2025–26 (Current)</option>
+                                        <option value="2024-25">FY 2024–25</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="prefDensity">Data Table Display Density</label>
+                                    <select id="prefDensity" class="form-select">
+                                        <option value="compact">Compact (More records per screen)</option>
+                                        <option value="comfortable" selected>Comfortable (Default government standard)</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Save Preferences</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Security & 2FA -->
+                <div class="tab-pane" id="tabSecurity">
+                    <div class="gov-card" style="max-width:800px;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Security, Password & Multi-Factor Authentication</h2>
+                                <p class="card-subtitle">Gov of India e-Pramaan Single Sign-On and Access Controls</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="securityForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="secCurrentPwd">Current Password</label>
+                                    <input type="password" id="secCurrentPwd" class="form-input" placeholder="••••••••">
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="secNewPwd">New Secure Password</label>
+                                        <input type="password" id="secNewPwd" class="form-input" placeholder="Min 8 chars, 1 number, 1 special">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="secConfirmPwd">Confirm New Password</label>
+                                        <input type="password" id="secConfirmPwd" class="form-input" placeholder="Re-enter new password">
+                                    </div>
+                                </div>
+
+                                <div style="background:var(--bg-surface-raised);padding:14px;border-radius:8px;margin:14px 0;">
+                                    <div style="font-weight:600;color:var(--primary-900);font-size:0.9rem;">Two-Factor Authentication (e-Pramaan / Aadhaar OTP)</div>
+                                    <p style="font-size:0.78rem;color:var(--text-muted);margin:4px 0 10px;">Mandatory for high-value financial installment disbursements (> ₹50 Lakhs).</p>
+                                    <span class="badge badge-status-completed">✓ 2FA ACTIVE (e-Pramaan NIC SSO)</span>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Update Security Credentials</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 5: AI & LLM Engine Configuration -->
+                <div class="tab-pane" id="tabAiConfig">
+                    <div class="gov-card" style="max-width:800px;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">🤖 MoSPI AI Engine & Cloud LLM Orchestration</h2>
+                                <p class="card-subtitle">Configure Groq Cloud or OpenAI API keys, autonomous scanning parameters, and anomaly sensitivity</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="aiConfigForm" onsubmit="event.preventDefault(); saveAiSettings();">
+                                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px 14px;border-radius:8px;margin-bottom:16px;">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="pulse-ring" style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:50%;"></span>
+                                        <strong style="color:#15803d;font-size:0.86rem;">AI Engine Active (Groq / OpenAI Hybrid Mode)</strong>
+                                    </div>
+                                    <p style="font-size:0.78rem;color:#166534;margin:4px 0 0;">
+                                        The platform utilizes an ultra-fast Groq LPU / OpenAI LLM architecture for natural language forensic reports & copilot queries, combined with an autonomous statistical anomaly engine for 100% offline uptime.
+                                    </p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="settingOpenAiKey">Cloud LLM API Key (Groq <code style="color:#0284c7;">gsk_...</code> or OpenAI <code style="color:#0284c7;">sk-...</code>)</label>
+                                    <div style="display:flex;gap:8px;">
+                                        <input type="password" id="settingOpenAiKey" class="form-input" style="font-family:monospace;" placeholder="Enter custom gsk_... or sk-... key (configured in environment)">
+                                        <button type="button" class="btn btn-secondary" onclick="toggleKeyVisibility()" style="padding:0 12px;" title="Show/Hide Key">👁️</button>
+                                        <button type="button" class="btn btn-primary" onclick="testOpenAiKey()" style="white-space:nowrap;">Test Key</button>
+                                    </div>
+                                    <span id="keyTestResult" style="display:block;margin-top:6px;font-size:0.75rem;color:var(--text-muted);">🔒 Official API key is securely loaded from environment/encrypted store.</span>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="settingAiModel">LLM Reasoning Model</label>
+                                        <select id="settingAiModel" class="form-select">
+                                            <option value="groq-auto" selected>Groq Cloud: openai/gpt-oss-120b (Ultra-Fast LPU)</option>
+                                            <option value="groq-20b">Groq Cloud: openai/gpt-oss-20b (Instant Latency)</option>
+                                            <option value="gpt-4o-mini">OpenAI: gpt-4o-mini</option>
+                                            <option value="gpt-4o">OpenAI: gpt-4o</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="settingGeoThreshold">Duplicate Proximity Threshold</label>
+                                        <select id="settingGeoThreshold" class="form-select">
+                                            <option value="500">500 Meters (Strict Urban)</option>
+                                            <option value="1000" selected>1,000 Meters (Standard Rural)</option>
+                                            <option value="2000">2,000 Meters (Broad Panchayat)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Autonomous Scanning Triggers</label>
+                                    <div style="display:flex;flex-direction:column;gap:8px;font-size:0.82rem;color:var(--text-secondary);margin-top:6px;">
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                            <input type="checkbox" checked> Auto-flag projects when expenditure > 70% with progress < 25% (Rapid Drawdown)
+                                        </label>
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                            <input type="checkbox" checked> Auto-scan for split contract tenders below ₹10 Lakhs (Rule 4.2 Evasion)
+                                        </label>
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                            <input type="checkbox" checked> Auto-trigger alert when milestone delayed > 45 days (SLA Breach)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Save AI Configuration</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 6: Backend & Cloud API Gateway -->
+                <div class="tab-pane" id="tabBackend" style="display:none;">
+                    <div class="gov-card" style="max-width:850px;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">🌐 Backend REST API Connection Gateway</h2>
+                                <p class="card-subtitle">Configure where the frontend routes requests across Local, Render, Vercel, or custom servers</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="backendConfigForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="backendApiUrlInput">Active REST API Base URL</label>
+                                    <div style="display:flex;gap:8px;">
+                                        <input type="text" id="backendApiUrlInput" class="form-input" style="font-family:monospace;" placeholder="e.g. https://your-backend.onrender.com/api or /api">
+                                        <button type="button" class="btn btn-secondary" onclick="testBackendConnectivity()" style="white-space:nowrap;">⚡ Test Ping</button>
+                                        <button type="submit" class="btn btn-primary" style="white-space:nowrap;">💾 Save URL</button>
+                                    </div>
+                                    <div id="backendPingResult" style="margin-top:8px;font-size:0.82rem;color:var(--text-secondary);">
+                                        Checking active connection...
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-top:16px;">
+                                    <label class="form-label">Quick Environment Presets</label>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetUrl('/api')">
+                                            🔄 Automatic Relative (/api)
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetUrl('http://localhost:5000/api')">
+                                            💻 Local Port 5000 (http://localhost:5000/api)
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="resetBackendUrl()">
+                                            ↩️ Reset to Default Detection
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top:20px;padding:16px;background:var(--bg-surface-raised);border:1px solid var(--border-color);border-radius:10px;">
+                                    <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:8px;color:var(--text-primary);">🚀 Deployment Quick Guide</h4>
+                                    <ul style="font-size:0.82rem;color:var(--text-secondary);line-height:1.6;margin:0;padding-left:18px;">
+                                        <li><strong>Deploying on Vercel:</strong> If your frontend is deployed to Vercel and backend is on Render/Railway, type your backend URL (e.g. <code>https://my-backend.onrender.com/api</code>) above and click Save.</li>
+                                        <li><strong>Vercel Proxy Rewrites:</strong> The included <code>vercel.json</code> automatically proxies <code>/api/*</code> requests directly to your backend service.</li>
+                                        <li><strong>Interactive Diagnostic Suite:</strong> Run full multi-point API endpoint verification on <a href="../connection-test.html" target="_blank" style="color:#0284c7;font-weight:600;">connection-test.html ↗</a></li>
+                                    </ul>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../data/mock-data.js"></script>
+    <script src="../data/india-districts.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/settings.js"></script>
+</body>
+</html>

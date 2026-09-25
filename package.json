@@ -1,0 +1,21 @@
+{
+  "name": "mplads-portal",
+  "version": "1.0.0",
+  "description": "MPLADS Monitoring & Analytics Platform - Autonomous AI Governance System",
+  "main": "server-static.js",
+  "scripts": {
+    "start": "node server-static.js",
+    "dev": "node server-static.js",
+    "serve": "node server-static.js",
+    "test": "node scratch/test-all-buttons.js",
+    "test:buttons": "node scratch/test-all-buttons.js",
+    "backend": "cd backend && npm start"
+  },
+  "keywords": [
+    "mplads",
+    "governance",
+    "analytics"
+  ],
+  "author": "Development Team",
+  "license": "ISC"
+}
