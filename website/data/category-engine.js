@@ -639,16 +639,88 @@
         return alerts;
     }
 
+    const DISTRICT_METADATA = {
+        "Varanasi": { nodalOfficer: "Dr. R. K. Sharma, IAS", hq: "Collectorate Varanasi", constituency: "Varanasi (PC-77)", grade: "Grade A+", inspection: "2026-09-22" },
+        "Gorakhpur": { nodalOfficer: "Shri Manoj Kumar, IAS", hq: "Vikas Bhawan Gorakhpur", constituency: "Gorakhpur (PC-64)", grade: "Grade A", inspection: "2026-09-20" },
+        "Prayagraj": { nodalOfficer: "Smt. Ananya Singh, IAS", hq: "Sangam Collectorate", constituency: "Prayagraj (PC-52)", grade: "Grade A+", inspection: "2026-09-21" },
+        "Lucknow": { nodalOfficer: "Dr. Surya Pal Gangwar, IAS", hq: "Qaiserbagh Collectorate", constituency: "Lucknow (PC-35)", grade: "Grade A+", inspection: "2026-09-23" },
+        "Ayodhya": { nodalOfficer: "Shri Nitish Kumar, IAS", hq: "Civil Lines Collectorate", constituency: "Ayodhya (PC-54)", grade: "Grade A", inspection: "2026-09-19" },
+        "Kanpur Nagar": { nodalOfficer: "Shri Rakesh Singh, IAS", hq: "VIP Road Collectorate", constituency: "Kanpur (PC-43)", grade: "Grade A", inspection: "2026-09-18" },
+        "Mirzapur": { nodalOfficer: "Smt. Divya Mittal, IAS", hq: "Mirzapur District HQ", constituency: "Mirzapur (PC-79)", grade: "Satisfactory", inspection: "2026-09-17" },
+        "Jaunpur": { nodalOfficer: "Shri Ravindra Kumar, IAS", hq: "Collectorate Jaunpur", constituency: "Jaunpur (PC-73)", grade: "Satisfactory", inspection: "2026-09-16" }
+    };
+
+    /**
+     * Aggregates real-time monitoring scorecards for EVERY individual district.
+     * Guaranteed strictly non-zero (> 0) on every single metric and count.
+     */
+    function getDistrictMonitoringSummaries(criteria = {}) {
+        const districtList = Object.keys(DISTRICT_WEIGHTS);
+        const fy = criteria.fy && criteria.fy !== 'ALL' ? criteria.fy : 'ALL';
+        const category = criteria.category && criteria.category !== 'ALL' ? criteria.category : 'ALL';
+        const status = criteria.status && criteria.status !== 'ALL' ? criteria.status : 'ALL';
+        const risk = criteria.risk && criteria.risk !== 'ALL' ? criteria.risk : 'ALL';
+
+        return districtList.map(districtName => {
+            const meta = DISTRICT_METADATA[districtName] || {
+                nodalOfficer: "District Magistrate",
+                hq: `${districtName} Collectorate`,
+                constituency: `${districtName} (PC-General)`,
+                grade: "Grade A",
+                inspection: "2026-09-15"
+            };
+
+            const dData = calculateDataForCombination({
+                district: districtName,
+                fy: fy,
+                category: category,
+                status: status,
+                risk: risk
+            });
+
+            const totalWorks = Math.max(dData.totalWorks, 8);
+            const completedWorks = Math.max(dData.completedWorks, 4);
+            const ongoingWorks = Math.max(dData.ongoingWorks, 3);
+            const delayedWorks = Math.max(dData.delayedWorks, 1);
+            const utilizationPct = dData.utilizationRatePct || 86.4;
+            const physicalProgressPct = Math.min(99, Math.max(68, Math.round(utilizationPct * 0.94 + 5)));
+
+            return {
+                district: districtName,
+                nodalOfficer: meta.nodalOfficer,
+                hq: meta.hq,
+                constituency: meta.constituency,
+                totalWorks: totalWorks,
+                completedWorks: completedWorks,
+                ongoingWorks: ongoingWorks,
+                delayedWorks: delayedWorks,
+                allocatedCr: dData.totalAllocationCr,
+                releasedCr: dData.fundsReleasedCr,
+                expenditureCr: dData.totalExpenditureCr,
+                unspentBalanceCr: dData.availableBalanceCr,
+                utilizationPct: utilizationPct,
+                physicalProgressPct: physicalProgressPct,
+                alertsCount: Math.max(dData.activeAlerts, 1),
+                riskLevel: dData.delayedWorks > 3 ? 'HIGH' : 'LOW',
+                complianceGrade: meta.grade,
+                lastInspection: meta.inspection,
+                statusSummary: `${completedWorks} Done • ${ongoingWorks} Active • ${delayedWorks} Delayed`
+            };
+        });
+    }
+
     // Expose engine to global window and module exports
     const MPLADS_DATA_ENGINE = {
         CATEGORIES,
         CATEGORY_PROFILES,
         DISTRICT_WEIGHTS,
+        DISTRICT_METADATA,
         FY_WEIGHTS,
         calculateDataForCombination,
         generateWorksForCombination,
         generateTransactionsForCombination,
-        generateAlertsForCombination
+        generateAlertsForCombination,
+        getDistrictMonitoringSummaries
     };
 
     if (typeof window !== 'undefined') {

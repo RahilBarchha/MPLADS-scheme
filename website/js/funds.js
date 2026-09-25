@@ -1457,17 +1457,96 @@ function handleAddTransactionSubmit(e) {
     // Broadcast sync event to notify any open dashboard or works tabs
     window.dispatchEvent(new CustomEvent('mplads_backend_synced'));
 
-    // Close modal
+    // Check that transaction is actually added to memory and ledger
+    const isAdded = transactionsData.some(t => t.id === newTxnId);
+
+    // Close add modal
     if (window.closeModal) {
         window.closeModal('addTransactionModal');
     }
 
-    // Informative confirmation notice
-    if (window.showMpladsToast) {
-        const remainingWorkBal = Math.max(0, (work.releasedAmountLakhs || 0) - (work.expenditureLakhs || 0));
-        window.showMpladsToast(`✓ ${type} transaction ${newTxnId} recorded: ₹${amount.toFixed(2)} Lakhs for ${work.id}${auditNote}. Work unspent balance is now ₹${remainingWorkBal.toFixed(2)} L.`, 'success');
+    if (isAdded) {
+        // Open the dedicated Transaction Confirmation Pop-up Modal
+        const cardEl = document.getElementById('txnSuccessDetailsCard');
+        if (cardEl) {
+            const typeBadgeStyle = type === 'RELEASE' ? 'background:#dbeafe;color:#1e40af;' : 
+                (type === 'EXPENDITURE' ? 'background:#dcfce7;color:#166534;' : 
+                (type === 'ALLOCATION' ? 'background:#fef3c7;color:#92400e;' : 'background:#f3e8ff;color:#6b21a8;'));
+            const remainingWorkBal = Math.max(0, (work.releasedAmountLakhs || 0) - (work.expenditureLakhs || 0));
+
+            cardEl.innerHTML = `
+                <div style="background:var(--bg-surface-raised, #f8fafc);border:1px solid var(--border-color, #e2e8f0);border-radius:10px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--border-color, #e2e8f0);padding-bottom:10px;">
+                        <div>
+                            <span style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">PFMS Voucher ID</span>
+                            <div style="font-size:1.15rem;font-weight:800;color:var(--primary-900, #0f172a);">${newTxnId}</div>
+                        </div>
+                        <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;${typeBadgeStyle}">
+                            ${type}
+                        </span>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <span style="font-size:0.72rem;color:var(--text-muted);">Amount Recorded</span>
+                            <div style="font-size:1.3rem;font-weight:800;color:#059669;">₹${amount.toFixed(2)} L</div>
+                            <span style="font-size:0.72rem;color:var(--text-muted);">(₹${amountCr.toFixed(3)} Cr)</span>
+                        </div>
+                        <div>
+                            <span style="font-size:0.72rem;color:var(--text-muted);">Treasury Reference</span>
+                            <div style="font-size:0.88rem;font-weight:600;font-family:monospace;color:var(--text-main);">${reference}</div>
+                            <span style="font-size:0.72rem;color:var(--text-muted);">Date: ${date}</span>
+                        </div>
+                    </div>
+
+                    <div style="background:var(--bg-surface, #fff);border:1px solid var(--border-color, #e2e8f0);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+                        <span style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Associated Target Work</span>
+                        <div style="font-size:0.85rem;font-weight:700;color:var(--primary-800, #1e3a8a);">${work.name}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                            ID: <strong>${work.id}</strong> • District: <strong>${work.district}</strong> • Sector: <strong>${work.category}</strong>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;background:var(--bg-surface, #fff);border:1px solid var(--border-color, #e2e8f0);border-radius:8px;padding:8px 12px;font-size:0.78rem;">
+                        <span>Released: <strong>₹${(work.releasedAmountLakhs || 0).toFixed(2)} L</strong></span>
+                        <span>Expenditure: <strong>₹${(work.expenditureLakhs || 0).toFixed(2)} L</strong></span>
+                        <span>Unspent: <strong style="color:#059669;">₹${remainingWorkBal.toFixed(2)} L</strong></span>
+                    </div>
+                </div>
+            `;
+            if (window.openModal) {
+                window.openModal('transactionStatusModal');
+            }
+        }
+
+        if (window.showMpladsToast) {
+            window.showMpladsToast(`✓ Transaction ${newTxnId} added successfully and verified in ledger.`, 'success');
+        }
+    } else {
+        if (window.showMpladsToast) {
+            window.showMpladsToast(`⚠️ Transaction recording could not be confirmed in ledger.`, 'warning');
+        }
     }
 }
+
+window.scrollToLatestTransaction = function () {
+    const tableCard = document.getElementById('transactionLedgerCard') || document.getElementById('transactionsTableBody');
+    if (tableCard) {
+        tableCard.scrollIntoView({ behavior: 'smooth' });
+        const firstRow = document.querySelector('#transactionsTableBody tr');
+        if (firstRow) {
+            firstRow.style.transition = 'background-color 0.5s ease';
+            firstRow.style.backgroundColor = '#dcfce7';
+            setTimeout(() => {
+                firstRow.style.backgroundColor = '';
+            }, 3000);
+        }
+    }
+};
+
+window.printTxnReceipt = function () {
+    window.print();
+};
 
 function showTxnFormError(msg) {
     const errEl = document.getElementById('addTxnError');

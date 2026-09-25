@@ -581,6 +581,42 @@
         </div>
     </div>
 
+    <!-- Transaction Added Verification Pop-Up Modal -->
+    <div class="modal-overlay" id="transactionStatusModal">
+        <div class="modal-container" style="max-width: 620px; text-align: left;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: #fff; padding: 18px 24px; border-radius: 12px 12px 0 0;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; border: 2px solid rgba(255,255,255,0.4);">
+                        ✅
+                    </div>
+                    <div>
+                        <h3 class="modal-title" style="color: #fff; margin: 0; font-size: 1.15rem; font-weight: 700;">Transaction Successfully Recorded</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.78rem; opacity: 0.95; color: #a7f3d0;">Verified in PFMS Ledger & Macro Balances Harmonized</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" style="color: #fff; font-size: 1.2rem;" onclick="closeModal('transactionStatusModal')">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 22px 24px;">
+                <div id="txnSuccessDetailsCard">
+                    <!-- Populated dynamically by handleAddTransactionSubmit -->
+                </div>
+                <div style="display: flex; gap: 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; font-size: 0.8rem; color: #1e40af; align-items: flex-start; margin-top: 14px;">
+                    <span style="font-size: 1.25rem; line-height: 1;">🔒</span>
+                    <div>
+                        <strong>Voucher Validation Status:</strong> The transaction has been strictly verified against financial rules, added to the in-memory ledger, saved locally, and synchronized with portfolio metrics.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-raised, #f8fafc); border-top: 1px solid var(--border-color, #e2e8f0);">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="printTxnReceipt()">🖨️ Print Voucher</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('transactionStatusModal')">Dismiss</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="closeModal('transactionStatusModal'); scrollToLatestTransaction();">View in Ledger</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../data/mock-data.js"></script>
     <script src="../data/india-districts.js"></script>
     <script src="../data/category-engine.js"></script>

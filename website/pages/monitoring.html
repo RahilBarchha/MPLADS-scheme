@@ -229,12 +229,95 @@
                     </div>
                 </section>
 
-                <!-- Monitoring Data Table Card -->
-                <div class="gov-card">
+                <!-- District Monitoring Macro KPIs -->
+                <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;" id="districtMonitoringKPIs">
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid var(--primary-600, #1d4ed8);">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Monitored Districts</div>
+                        <div class="kpi-value" id="monKpiDistrictsCount" style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-top: 4px;">8 Districts</div>
+                        <div class="kpi-subtext" style="font-size: 0.72rem; color: #16a34a; font-weight: 500;">✓ 100% Administrative Coverage</div>
+                    </div>
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid #0284c7;">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Monitored Works</div>
+                        <div class="kpi-value" id="monKpiTotalWorks" style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-top: 4px;">324 Works</div>
+                        <div class="kpi-subtext" id="monKpiWorksBreakdown" style="font-size: 0.72rem; color: var(--text-muted);">216 Completed • 82 Ongoing</div>
+                    </div>
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid #059669;">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Sanctioned (Cr)</div>
+                        <div class="kpi-value" id="monKpiAllocatedCr" style="font-size: 1.6rem; font-weight: 800; color: #059669; margin-top: 4px;">₹564.80 Cr</div>
+                        <div class="kpi-subtext" id="monKpiReleasedSubtext" style="font-size: 0.72rem; color: var(--text-muted);">Released: ₹498.20 Cr</div>
+                    </div>
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid #d97706;">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Expenditure (Cr)</div>
+                        <div class="kpi-value" id="monKpiExpenditureCr" style="font-size: 1.6rem; font-weight: 800; color: #d97706; margin-top: 4px;">₹432.40 Cr</div>
+                        <div class="kpi-subtext" id="monKpiUnspentSubtext" style="font-size: 0.72rem; color: var(--text-muted);">Unspent: ₹65.80 Cr</div>
+                    </div>
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid #7c3aed;">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">State Absorption Rate</div>
+                        <div class="kpi-value" id="monKpiUtilizationPct" style="font-size: 1.6rem; font-weight: 800; color: #7c3aed; margin-top: 4px;">86.8%</div>
+                        <div class="kpi-subtext" style="font-size: 0.72rem; color: #16a34a; font-weight: 500;">⚡ +4.2% vs target pacing</div>
+                    </div>
+                    <div class="gov-card kpi-card" style="padding: 16px; border-left: 4px solid #dc2626;">
+                        <div class="kpi-label" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Field Audit Flags</div>
+                        <div class="kpi-value" id="monKpiAlertsCount" style="font-size: 1.6rem; font-weight: 800; color: #dc2626; margin-top: 4px;">12 Flags</div>
+                        <div class="kpi-subtext" style="font-size: 0.72rem; color: var(--text-muted);">Continuous AI telemetry active</div>
+                    </div>
+                </section>
+
+                <!-- Individual District Monitoring Table Card -->
+                <div class="gov-card" id="districtMonitoringCard" style="margin-bottom: 24px; border: 1px solid var(--border-strong, #cbd5e1);">
+                    <div class="card-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; padding: 16px 20px;">
+                        <div>
+                            <h2 class="card-title" style="color: #fff; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                                <span>🏛️</span>
+                                <span>District-wise Operational & Financial Monitoring Table</span>
+                                <span class="badge" style="background: rgba(255,255,255,0.15); color: #93c5fd; font-size: 0.75rem;" id="districtTableScopeBadge">All 8 Administrative Districts</span>
+                            </h2>
+                            <p class="card-subtitle" style="color: #94a3b8; font-size: 0.78rem; margin: 4px 0 0 0;">
+                                Real-time monitoring scorecard for each individual district: Physical progress, fund utilization, nodal accountability, and audit health.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="districtSearchInput" placeholder="Filter district..." class="form-input" style="width: 170px; padding: 6px 10px; font-size: 0.8rem; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                            <button class="btn btn-secondary btn-sm" onclick="exportDistrictMonitoringCSV()" style="font-size: 0.78rem; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);">📥 Export Districts CSV</button>
+                            <button class="btn btn-primary btn-sm" onclick="resetDistrictView()" id="resetDistrictViewBtn" style="font-size: 0.78rem;">Show All Districts</button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="gov-table" id="districtMonitoringTable">
+                                <thead>
+                                    <tr style="background: var(--bg-surface-raised, #f1f5f9);">
+                                        <th style="min-width: 170px;">District & HQ</th>
+                                        <th style="min-width: 180px;">Nodal Officer / Jurisdiction</th>
+                                        <th style="text-align: center; min-width: 140px;">Works Portfolio<br><small style="font-weight: normal; opacity: 0.8;">Total | Done | Ongoing | Delayed</small></th>
+                                        <th style="text-align: right; min-width: 110px;">Sanctioned (₹ Cr)</th>
+                                        <th style="text-align: right; min-width: 100px;">Released (₹ Cr)</th>
+                                        <th style="text-align: right; min-width: 100px;">Spent (₹ Cr)</th>
+                                        <th style="min-width: 140px;">Utilization Velocity</th>
+                                        <th style="min-width: 130px;">Physical Progress</th>
+                                        <th style="text-align: center; min-width: 90px;">Alerts</th>
+                                        <th style="text-align: center; min-width: 110px;">Compliance</th>
+                                        <th style="text-align: center; min-width: 120px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="districtMonitoringTableBody">
+                                    <!-- Rendered dynamically by monitoring.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer" style="padding: 10px 18px; font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-raised, #f8fafc);">
+                            <span id="districtTableSummaryText">Showing all 8 monitored districts • Click "🔍 Inspect Works" on any district to view its individual works below.</span>
+                            <span style="color: var(--text-muted);">Data updated: Real-time telemetry</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Individual Works Monitoring Table Card -->
+                <div class="gov-card" id="worksMonitoringCard">
                     <div class="card-header">
                         <div>
-                            <h2 class="card-title">Active Monitoring Table</h2>
-                            <p class="card-subtitle">Showing live progress, financial disbursement, and anomaly risk ratings</p>
+                            <h2 class="card-title">📋 Individual Works Field Monitoring Table</h2>
+                            <p class="card-subtitle" id="worksTableSubtitle">Showing live progress, financial disbursement, and anomaly risk ratings across individual schemes</p>
                         </div>
                         <div style="display:flex;gap:8px;">
                             <button class="btn btn-secondary btn-sm" onclick="exportMonitoringCSV()">📥 Export CSV</button>
@@ -298,6 +381,7 @@
 
     <script src="../data/mock-data.js"></script>
     <script src="../data/india-districts.js"></script>
+    <script src="../data/category-engine.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/main.js"></script>
