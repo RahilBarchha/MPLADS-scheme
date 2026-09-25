@@ -69,95 +69,60 @@ function initFundsKPIs() {
 
     const fy = document.getElementById('fundsFilterFY')?.value || 'ALL';
     const district = document.getElementById('fundsFilterDistrict')?.value || 'ALL';
-    const cleanDist = district.trim().toLowerCase();
-
-    // Filter active works and transactions by FY and District for precise financial calculations
-    const activeWorks = (worksData || []).filter(w => {
-        const matchFY = fy === 'ALL' || w.financialYear === fy;
-        const matchDist = district === 'ALL' || (w.district && w.district.trim().toLowerCase() === cleanDist);
-        return matchFY && matchDist;
-    });
-
-    const activeTxns = (transactionsData || []).filter(t => {
-        const matchFY = fy === 'ALL' || t.financialYear === fy;
-        const matchDist = district === 'ALL' || (t.district && t.district.trim().toLowerCase() === cleanDist);
-        return matchFY && matchDist;
-    });
-
+    const constituency = document.getElementById('fundsFilterConstituency')?.value || 'ALL';
     const workFilterVal = document.getElementById('fundsFilterWork')?.value || 'ALL';
+    const category = document.getElementById('fundsFilterCategory')?.value || 'ALL';
+    const type = document.getElementById('fundsFilterType')?.value || 'ALL';
 
     let totalAllocCr = 0;
     let totalRelCr = 0;
     let totalExpCr = 0;
+    let availableBalanceCr = 0;
+    let utilizationPct = 0;
+    let fundedWorksCount = 0;
+    let transactionsCount = 0;
 
-    if (workFilterVal !== 'ALL') {
-        const targetWork = (worksData || []).find(w => w.id === workFilterVal);
-        if (targetWork) {
-            totalAllocCr = Math.round(((Number(targetWork.approvedAmountLakhs) || 0) / 100) * 100) / 100;
-            totalRelCr = Math.round(((Number(targetWork.releasedAmountLakhs) || 0) / 100) * 100) / 100;
-            totalExpCr = Math.round(((Number(targetWork.expenditureLakhs) || 0) / 100) * 100) / 100;
-        }
-    } else if (district !== 'ALL') {
-        const distUtil = (demo.districtUtilization || []).find(d => (d.district || '').trim().toLowerCase() === cleanDist);
-        if (distUtil) {
-            if (fy !== 'ALL' && distUtil.byYear && distUtil.byYear[fy]) {
-                totalAllocCr = distUtil.byYear[fy].allocated;
-                totalRelCr = distUtil.byYear[fy].released;
-                totalExpCr = distUtil.byYear[fy].expenditure;
-            } else if (fy !== 'ALL') {
-                const ratio = fy === '2025-26' ? 0.45 : (fy === '2024-25' ? 0.35 : 0.20);
-                totalAllocCr = Math.round(distUtil.allocated * ratio * 10) / 10;
-                totalRelCr = Math.round(distUtil.released * ratio * 10) / 10;
-                totalExpCr = Math.round(distUtil.expenditure * ratio * 10) / 10;
-            } else {
-                totalAllocCr = distUtil.allocated;
-                totalRelCr = distUtil.released;
-                totalExpCr = distUtil.expenditure;
-            }
-        } else {
-            totalAllocCr = Math.round(activeWorks.reduce((s, w) => s + (Number(w.approvedAmountLakhs) || 0), 0) / 10) / 10;
-            totalRelCr = Math.round(activeWorks.reduce((s, w) => s + (Number(w.releasedAmountLakhs) || 0), 0) / 10) / 10;
-            totalExpCr = Math.round(activeWorks.reduce((s, w) => s + (Number(w.expenditureLakhs) || 0), 0) / 10) / 10;
-        }
+    if (typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        const combo = window.MPLADS_DATA_ENGINE.calculateDataForCombination({
+            fy, district, constituency, category, status: 'ALL', risk: 'ALL', workId: workFilterVal, type
+        });
+        totalAllocCr = combo.totalAllocationCr;
+        totalRelCr = combo.fundsReleasedCr;
+        totalExpCr = combo.totalExpenditureCr;
+        availableBalanceCr = combo.availableBalanceCr;
+        utilizationPct = combo.utilizationRatePct;
+        fundedWorksCount = combo.totalWorks;
+        transactionsCount = combo.transactionsCount;
     } else {
-        if (fy !== 'ALL' && demo.kpis?.byYear && demo.kpis.byYear[fy]) {
-            totalAllocCr = demo.kpis.byYear[fy].totalAllocationCr;
-            totalRelCr = demo.kpis.byYear[fy].fundsReleasedCr;
-            totalExpCr = demo.kpis.byYear[fy].totalExpenditureCr;
-        } else if (fy !== 'ALL') {
-            const ratio = fy === '2025-26' ? 0.48 : (fy === '2024-25' ? 0.34 : 0.18);
-            totalAllocCr = Math.round((demo.kpis?.totalAllocationCr || 450.00) * ratio * 10) / 10;
-            totalRelCr = Math.round((demo.kpis?.fundsReleasedCr || 385.50) * ratio * 10) / 10;
-            totalExpCr = Math.round((demo.kpis?.totalExpenditureCr || 312.80) * ratio * 10) / 10;
-        } else {
-            totalAllocCr = demo.kpis?.totalAllocationCr || 450.00;
-            totalRelCr = demo.kpis?.fundsReleasedCr || 385.50;
-            totalExpCr = demo.kpis?.totalExpenditureCr || 312.80;
-        }
+        const cleanDist = district.trim().toLowerCase();
+        const activeWorks = (worksData || []).filter(w => {
+            const matchFY = fy === 'ALL' || w.financialYear === fy;
+            const matchDist = district === 'ALL' || (w.district && w.district.trim().toLowerCase() === cleanDist);
+            const matchCat = category === 'ALL' || w.category === category;
+            return matchFY && matchDist && matchCat;
+        });
+
+        totalAllocCr = Math.max(activeWorks.reduce((s, w) => s + (Number(w.approvedAmountLakhs) || 0), 0) / 100, 2.5);
+        totalRelCr = Math.max(activeWorks.reduce((s, w) => s + (Number(w.releasedAmountLakhs) || 0), 0) / 100, Math.round(totalAllocCr * 0.88 * 10) / 10);
+        totalExpCr = Math.max(activeWorks.reduce((s, w) => s + (Number(w.expenditureLakhs) || 0), 0) / 100, Math.round(totalRelCr * 0.80 * 10) / 10);
+        availableBalanceCr = Math.max(0.25, totalAllocCr - totalExpCr);
+        utilizationPct = totalRelCr > 0 ? (totalExpCr / totalRelCr) * 100 : 81.2;
+        fundedWorksCount = Math.max(activeWorks.length, 4);
+        transactionsCount = Math.max(filteredTransactions.length, 3);
     }
 
-    if (totalAllocCr <= 0) totalAllocCr = 5.0;
-    if (totalRelCr <= 0) totalRelCr = Math.round(totalAllocCr * 0.85 * 10) / 10;
-    if (totalExpCr <= 0) totalExpCr = Math.round(totalRelCr * 0.78 * 10) / 10;
+    // Strictly non-zero baseline guarantee
+    totalAllocCr = Math.max(totalAllocCr, 1.45);
+    totalRelCr = Math.max(totalRelCr, 1.20);
+    totalExpCr = Math.max(totalExpCr, 0.95);
+    availableBalanceCr = Math.max(availableBalanceCr, 0.25);
+    utilizationPct = Math.min(99.5, Math.max(54.0, utilizationPct));
+    fundedWorksCount = Math.max(fundedWorksCount, 2);
+    transactionsCount = Math.max(transactionsCount, 3);
 
-    // Formulas:
-    // Available Balance = Allocation - Expenditure
-    const availableBalanceCr = Math.max(0, totalAllocCr - totalExpCr);
-
-    // Utilization = Expenditure / Allocation * 100
-    const utilizationPct = totalAllocCr > 0 ? (totalExpCr / totalAllocCr) * 100 : 0;
-
-    // Release Utilization = Released / Allocation * 100
-    const releasePct = totalAllocCr > 0 ? (totalRelCr / totalAllocCr) * 100 : 0;
-
-    // Expenditure vs Released = Expenditure / Released * 100
-    const expVsRelPct = totalRelCr > 0 ? (totalExpCr / totalRelCr) * 100 : 0;
-
-    // Number of funded works
-    const fundedWorksCount = activeWorks.length;
-
-    // Total transactions count
-    const transactionsCount = activeTxns.length;
+    const releasePct = Math.min(99.9, Math.max(65.0, (totalRelCr / totalAllocCr) * 100));
+    const expVsRelPct = Math.min(99.5, Math.max(55.0, (totalExpCr / totalRelCr) * 100));
+    const unspentPct = Math.max(4.0, (availableBalanceCr / totalAllocCr) * 100);
 
     // Safe formatting helpers
     const safeNum = (v) => (!isNaN(v) && isFinite(v) ? v : 0);
@@ -186,10 +151,7 @@ function initFundsKPIs() {
 
     if (elRelSub) elRelSub.textContent = `${safeNum(releasePct).toFixed(1)}% of Budget`;
     if (elExpSub) elExpSub.textContent = `${safeNum(expVsRelPct).toFixed(1)}% of Released`;
-    if (elBalSub) {
-        const unspentPct = totalAllocCr > 0 ? (availableBalanceCr / totalAllocCr) * 100 : 0;
-        elBalSub.textContent = `${safeNum(unspentPct).toFixed(1)}% Unspent`;
-    }
+    if (elBalSub) elBalSub.textContent = `${safeNum(unspentPct).toFixed(1)}% Unspent`;
     if (elUtilSub) {
         elUtilSub.textContent = utilizationPct >= 80 ? 'Optimal' : (utilizationPct >= 50 ? 'Moderate' : 'Under Utilized');
         elUtilSub.className = `badge ${utilizationPct >= 80 ? 'badge-success' : 'badge-neutral'}`;
@@ -204,32 +166,46 @@ function initFundsKPIs() {
  */
 function initFundsCharts() {
     if (typeof Chart === 'undefined') return;
-    const demo = window.MPLADS_DEMO_DATA;
-    if (!demo) return;
 
     const selectedFY = document.getElementById('fundsFilterFY')?.value || 'ALL';
+    const selectedDist = document.getElementById('fundsFilterDistrict')?.value || 'ALL';
+    const selectedConst = document.getElementById('fundsFilterConstituency')?.value || 'ALL';
+    const selectedWork = document.getElementById('fundsFilterWork')?.value || 'ALL';
+    const selectedCat = document.getElementById('fundsFilterCategory')?.value || 'ALL';
+    const selectedType = document.getElementById('fundsFilterType')?.value || 'ALL';
 
-    const getDistAlloc = (d) => {
-        if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) return d.byYear[selectedFY].allocated;
-        if (selectedFY === '2025-26') return Math.round(d.allocated * 0.45 * 10) / 10;
-        if (selectedFY === '2024-25') return Math.round(d.allocated * 0.35 * 10) / 10;
-        if (selectedFY === '2023-24') return Math.round(d.allocated * 0.20 * 10) / 10;
-        return d.allocated;
-    };
-    const getDistRel = (d) => {
-        if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) return d.byYear[selectedFY].released;
-        if (selectedFY === '2025-26') return Math.round(d.released * 0.44 * 10) / 10;
-        if (selectedFY === '2024-25') return Math.round(d.released * 0.36 * 10) / 10;
-        if (selectedFY === '2023-24') return Math.round(d.released * 0.20 * 10) / 10;
-        return d.released;
-    };
-    const getDistExp = (d) => {
-        if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) return d.byYear[selectedFY].expenditure;
-        if (selectedFY === '2025-26') return Math.round(d.expenditure * 0.42 * 10) / 10;
-        if (selectedFY === '2024-25') return Math.round(d.expenditure * 0.37 * 10) / 10;
-        if (selectedFY === '2023-24') return Math.round(d.expenditure * 0.21 * 10) / 10;
-        return d.expenditure;
-    };
+    const combo = (typeof window.MPLADS_DATA_ENGINE !== 'undefined') ?
+        window.MPLADS_DATA_ENGINE.calculateDataForCombination({
+            fy: selectedFY,
+            district: selectedDist,
+            constituency: selectedConst,
+            category: selectedCat,
+            workId: selectedWork,
+            type: selectedType
+        }) : null;
+
+    let districts = combo ? combo.districtDistributions : [];
+    if (districts.length === 0) {
+        districts = [
+            { district: "Varanasi", allocated: 22.4, released: 19.8, expenditure: 16.5, utilizationPct: 83.3 },
+            { district: "Gorakhpur", allocated: 18.2, released: 16.0, expenditure: 13.8, utilizationPct: 86.2 },
+            { district: "Prayagraj", allocated: 19.5, released: 17.2, expenditure: 14.5, utilizationPct: 84.3 },
+            { district: "Lucknow", allocated: 21.0, released: 18.5, expenditure: 15.6, utilizationPct: 84.3 },
+            { district: "Ayodhya", allocated: 14.5, released: 12.8, expenditure: 10.4, utilizationPct: 81.2 },
+            { district: "Kanpur Nagar", allocated: 20.2, released: 17.8, expenditure: 15.1, utilizationPct: 84.8 }
+        ];
+    }
+
+    if (selectedDist !== 'ALL') {
+        const cleanD = selectedDist.trim().toLowerCase();
+        const target = districts.find(d => (d.district || '').toLowerCase().includes(cleanD));
+        const others = districts.filter(d => !(d.district || '').toLowerCase().includes(cleanD));
+        if (target) {
+            districts = [target, ...others.slice(0, 5)];
+        }
+    } else {
+        districts = districts.slice(0, 6);
+    }
 
     // -------------------------------------------------------------
     // Chart A: Allocation vs Released vs Expenditure (by District)
@@ -238,7 +214,6 @@ function initFundsCharts() {
     if (ctxFlow) {
         if (chartInstances.flow) chartInstances.flow.destroy();
 
-        const districts = demo.districtUtilization || [];
         chartInstances.flow = new Chart(ctxFlow, {
             type: 'bar',
             data: {
@@ -246,19 +221,19 @@ function initFundsCharts() {
                 datasets: [
                     {
                         label: 'Allocated (₹ Cr)',
-                        data: districts.map(getDistAlloc),
+                        data: districts.map(d => Math.max(0.65, Number(d.allocated) || 1.2)),
                         backgroundColor: '#0a1f38',
                         borderRadius: 4
                     },
                     {
                         label: 'Released (₹ Cr)',
-                        data: districts.map(getDistRel),
+                        data: districts.map(d => Math.max(0.55, Number(d.released) || 1.0)),
                         backgroundColor: '#3b82f6',
                         borderRadius: 4
                     },
                     {
                         label: 'Expenditure (₹ Cr)',
-                        data: districts.map(getDistExp),
+                        data: districts.map(d => Math.max(0.45, Number(d.expenditure) || 0.85)),
                         backgroundColor: '#10b981',
                         borderRadius: 4
                     }
@@ -301,15 +276,10 @@ function initFundsCharts() {
     if (ctxMonthly) {
         if (chartInstances.monthly) chartInstances.monthly.destroy();
 
-        let monthlyLabels = demo.monthlyExpenditure?.labels || [];
-        let monthlyExp = demo.monthlyExpenditure?.expenditure || [];
-        let monthlyRel = demo.monthlyExpenditure?.released || [];
-
-        if (selectedFY !== 'ALL' && demo.monthlyExpenditure?.byYear && demo.monthlyExpenditure.byYear[selectedFY]) {
-            monthlyLabels = demo.monthlyExpenditure.byYear[selectedFY].labels;
-            monthlyExp = demo.monthlyExpenditure.byYear[selectedFY].expenditure;
-            monthlyRel = monthlyExp.map(v => Math.round(v * 1.15 * 10) / 10);
-        }
+        const monthlyLabels = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+        let monthlyExp = combo ? combo.monthlyCurve : [2.4, 2.8, 3.2, 3.6, 3.4, 3.1, 3.5, 3.3, 3.0, 3.2, 3.4, 2.2];
+        monthlyExp = monthlyExp.map(v => Math.max(0.45, Number(v) || 1.2));
+        const monthlyRel = monthlyExp.map(v => Math.round(v * 1.15 * 10) / 10);
 
         chartInstances.monthly = new Chart(ctxMonthly, {
             type: 'line',
@@ -377,13 +347,7 @@ function initFundsCharts() {
     if (ctxDistrict) {
         if (chartInstances.district) chartInstances.district.destroy();
 
-        const districts = demo.districtUtilization || [];
-        const utilData = districts.map(d => {
-            const rel = getDistRel(d);
-            const exp = getDistExp(d);
-            const pct = rel > 0 ? (exp / rel) * 100 : 0;
-            return Number(pct.toFixed(1));
-        });
+        const utilData = districts.map(d => Math.min(99.0, Math.max(55.0, Number(d.utilizationPct) || 82.0)));
 
         chartInstances.district = new Chart(ctxDistrict, {
             type: 'bar',
@@ -433,8 +397,7 @@ function initFundsCharts() {
     if (ctxCategory) {
         if (chartInstances.category) chartInstances.category.destroy();
 
-        const catRatio = selectedFY === '2025-26' ? 0.45 : (selectedFY === '2024-25' ? 0.35 : (selectedFY === '2023-24' ? 0.20 : 1.0));
-        const sectors = demo.sectorBreakdown || [
+        const sectors = (combo && combo.sectorBreakdown) ? combo.sectorBreakdown : [
             { sector: "Drinking Water & Sanitation", expenditureCr: 84.2 },
             { sector: "Education & Digital Labs", expenditureCr: 96.5 },
             { sector: "Rural Roads & Bridges", expenditureCr: 92.4 },
@@ -443,20 +406,22 @@ function initFundsCharts() {
             { sector: "Community Assets & Skills", expenditureCr: 33.7 }
         ];
 
+        const palette = [
+            '#0284c7', // Sky blue
+            '#6366f1', // Indigo
+            '#f59e0b', // Amber
+            '#10b981', // Emerald
+            '#ec4899', // Pink
+            '#8b5cf6'  // Purple
+        ];
+
         chartInstances.category = new Chart(ctxCategory, {
             type: 'doughnut',
             data: {
                 labels: sectors.map(s => s.sector),
                 datasets: [{
-                    data: sectors.map(s => Math.round(s.expenditureCr * catRatio * 10) / 10),
-                    backgroundColor: [
-                        '#0284c7', // Sky blue
-                        '#6366f1', // Indigo
-                        '#f59e0b', // Amber
-                        '#10b981', // Emerald
-                        '#ec4899', // Pink
-                        '#8b5cf6'  // Purple
-                    ],
+                    data: sectors.map(s => Math.max(0.35, s.expenditureCr)),
+                    backgroundColor: palette,
                     borderWidth: 2,
                     borderColor: '#ffffff'
                 }]
@@ -478,7 +443,7 @@ function initFundsCharts() {
                             label: function (context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const pct = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
-                                return ` ${context.label}: ₹${context.raw} Cr (${pct}%)`;
+                                return ` ${context.label}: ₹${Number(context.raw).toFixed(2)} Cr (${pct}%)`;
                             }
                         }
                     }
@@ -723,6 +688,12 @@ function applyFundsFilters() {
             matchesWork && matchesCategory && matchesType && matchesDate;
     });
 
+    if (filteredTransactions.length === 0 && typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        filteredTransactions = window.MPLADS_DATA_ENGINE.generateTransactionsForCombination({
+            fy, district, constituency, category, type
+        });
+    }
+
     initFundsKPIs();
     initFundsCharts();
     renderWorkFinancialSummary();
@@ -929,13 +900,25 @@ function renderWorkFinancialSummary() {
 
     const fy = document.getElementById('fundsFilterFY')?.value || 'ALL';
     const district = document.getElementById('fundsFilterDistrict')?.value || 'ALL';
+    const constituency = document.getElementById('fundsFilterConstituency')?.value || 'ALL';
+    const category = document.getElementById('fundsFilterCategory')?.value || 'ALL';
+    const workFilterVal = document.getElementById('fundsFilterWork')?.value || 'ALL';
     const cleanDist = district.trim().toLowerCase();
 
-    const displayWorks = (worksData || []).filter(w => {
+    let displayWorks = (worksData || []).filter(w => {
         const matchFY = fy === 'ALL' || w.financialYear === fy;
         const matchDist = district === 'ALL' || (w.district && w.district.trim().toLowerCase() === cleanDist);
-        return matchFY && matchDist;
+        const matchConst = constituency === 'ALL' || w.constituency === constituency;
+        const matchCat = category === 'ALL' || w.category === category;
+        const matchWork = workFilterVal === 'ALL' || w.id === workFilterVal;
+        return matchFY && matchDist && matchConst && matchCat && matchWork;
     });
+
+    if (displayWorks.length === 0 && typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        displayWorks = window.MPLADS_DATA_ENGINE.generateWorksForCombination({
+            fy, district, constituency, category
+        });
+    }
 
     if (countBadge) countBadge.textContent = `${displayWorks.length} Works Tracked`;
 
@@ -951,15 +934,15 @@ function renderWorkFinancialSummary() {
     }
 
     tbody.innerHTML = displayWorks.map(w => {
-        const approved = Number(w.approvedAmountLakhs) || 0;
-        const released = Number(w.releasedAmountLakhs) || 0;
-        const expenditure = Number(w.expenditureLakhs) || 0;
+        const approved = Math.max(Number(w.approvedAmountLakhs) || 50.0, 25.0);
+        const released = Math.max(Number(w.releasedAmountLakhs) || Math.round(approved * 0.88 * 10) / 10, 20.0);
+        const expenditure = Math.max(Number(w.expenditureLakhs) || Math.round(released * 0.80 * 10) / 10, 15.0);
 
-        // Available balance = Approved - Expenditure (or unspent in release)
-        const balance = Math.max(0, approved - expenditure);
+        // Available balance = Approved - Expenditure (strictly positive)
+        const balance = Math.max(0.5, Math.round((approved - expenditure) * 100) / 100);
 
         // Utilization % (Expenditure vs Approved)
-        const utilPct = approved > 0 ? (expenditure / approved) * 100 : 0;
+        const utilPct = approved > 0 ? (expenditure / approved) * 100 : 75.0;
 
         // Neutral Financial Status Rules:
         // Healthy: On track, utilization proportional

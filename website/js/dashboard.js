@@ -141,6 +141,9 @@ function initDashboardFilterEvents() {
 
 // Generate realistic mock works customized to any filter combination so works dataset is NEVER empty
 function generateFallbackWorks(criteria = {}) {
+    if (typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        return window.MPLADS_DATA_ENGINE.generateWorksForCombination(criteria);
+    }
     const fy = criteria.fy && criteria.fy !== 'ALL' ? criteria.fy : '2025-26';
     const district = criteria.district && criteria.district !== 'ALL' ? criteria.district : 'Varanasi';
     const constituency = criteria.constituency && criteria.constituency !== 'ALL' ? criteria.constituency : `${district} (PC-77)`;
@@ -148,100 +151,48 @@ function generateFallbackWorks(criteria = {}) {
     const status = criteria.status && criteria.status !== 'ALL' ? criteria.status : 'ONGOING';
     const risk = criteria.risk && criteria.risk !== 'ALL' ? criteria.risk : 'LOW';
 
-    const baseTitles = {
-        "Drinking Water & Sanitation": [
-            "Piped Drinking Water Scheme & Solar RO Plant",
-            "Deep Tube Well Cluster & Water Quality Lab",
-            "Overhead Clean Water Reservoir & Distribution",
-            "Bio-Digester Sanitation & Septage Treatment"
-        ],
-        "Education & Digital Labs": [
-            "Smart ICT Interactive Classroom Computer Labs",
-            "STEM Robotics & Science Innovation Workshop",
-            "Digital Library & High School Computer Wing",
-            "Institutional Language & Computer Training Lab"
-        ],
-        "Rural Roads & Bridges": [
-            "All-Weather Bituminous Link Road (3.8 km)",
-            "RCC High-Level Drainage Culvert & Causeway",
-            "Panchayat Modernized Concrete Road Network",
-            "Bridge Reconstruction & Embankment Protection"
-        ],
-        "Public Health Infrastructure": [
-            "Primary Health Centre Diagnostic & Pathology Wing",
-            "Solar Cold-Chain & Emergency Ambulance Post",
-            "Tele-Medicine Consultation Facility & Clinic",
-            "Maternal & Child Health Care Special Wing"
-        ],
-        "Renewable Energy & Lighting": [
-            "Solar High-Mast Street Illumination System",
-            "Gram Panchayat Rooftop Solar PV Microgrid",
-            "Solar Agricultural Feeder Pumping Installation",
-            "Decentralized LED Streetlight Cluster"
-        ],
-        "Community Assets & Skills": [
-            "Skill Development & Vocational Resource Center",
-            "Farmers Kisan Mandi Solar Cold Storage",
-            "Women SHG Handloom & Craft Production Hub",
-            "Panchayat Assembly Hall & Disaster Shelter"
-        ]
-    };
-
-    const titles = baseTitles[category] || baseTitles["Drinking Water & Sanitation"];
-    const statuses = status !== 'ALL' ? [status, 'COMPLETED', 'ONGOING', 'DELAYED'] : ['COMPLETED', 'ONGOING', 'DELAYED', 'COMPLETED'];
-    const risks = risk !== 'ALL' ? [risk, 'LOW', 'MEDIUM', 'HIGH'] : ['LOW', 'LOW', 'HIGH', 'MEDIUM'];
-
-    return titles.map((title, idx) => {
-        const itemStatus = statuses[idx % statuses.length];
-        const itemRisk = risks[idx % risks.length];
-        const isDel = itemStatus === 'DELAYED';
-        const compPct = itemStatus === 'COMPLETED' ? 100 : (itemStatus === 'ONGOING' ? 70 : (isDel ? 45 : 30));
-        const approved = 60.0 + idx * 15.0;
-        const released = itemStatus === 'COMPLETED' ? approved : Math.round(approved * 0.88 * 10) / 10;
-        const spent = itemStatus === 'COMPLETED' ? released : Math.round(released * (compPct / 100) * 10) / 10;
-        const daysDelayed = isDel ? (75 + idx * 25) : 0;
-
-        return {
-            id: `WRK-2026-REG-${String(300 + idx).padStart(4, '0')}`,
-            name: `${title}, ${district}`,
+    return [
+        {
+            id: `WRK-2026-REG-301`,
+            name: `Infrastructure Scheme (${category}), ${district}`,
             district: district,
             constituency: constituency,
             mp: `Hon. MP (${district})`,
             financialYear: fy,
             category: category,
-            approvedAmountLakhs: approved,
-            releasedAmountLakhs: released,
-            expenditureLakhs: spent,
-            completionPct: compPct,
-            status: itemStatus,
-            risk: itemRisk,
-            monitoringStatus: isDel ? "Attention Needed" : (itemStatus === 'ONGOING' ? "Normal" : "Completed"),
-            monitoringObservations: isDel ?
-                `Execution delayed by ${daysDelayed} days beyond target SLA. Notice issued to executing division.` :
-                `Milestone achievements verified under MoSPI monitoring norms. Quality standards verified.`,
-            daysDelayed: daysDelayed,
+            approvedAmountLakhs: 75.0,
+            releasedAmountLakhs: 66.0,
+            expenditureLakhs: 52.0,
+            completionPct: 70,
+            status: status === 'ALL' ? 'ONGOING' : status,
+            risk: risk === 'ALL' ? 'LOW' : risk,
+            monitoringStatus: status === 'DELAYED' ? "Attention Needed" : "Normal",
+            monitoringObservations: "MoSPI milestone telemetry verified.",
+            daysDelayed: status === 'DELAYED' ? 75 : 0,
             lastUpdated: "2026-09-20",
-            startDate: fy === '2023-24' ? "2023-10-10" : (fy === '2024-25' ? "2024-11-15" : "2025-07-20"),
-            expectedCompletion: itemStatus === 'COMPLETED' ? "2026-04-30" : "2026-12-31",
-            actualCompletion: itemStatus === 'COMPLETED' ? "2026-04-15" : null,
+            startDate: "2025-07-20",
+            expectedCompletion: "2026-12-31",
+            actualCompletion: null,
             implementingAgency: `District Rural Works Agency (${district})`,
-            description: `${title} sanctioned under MPLADS priority fund for ${district} (${constituency}).`,
+            description: `Sanctioned under MPLADS priority fund for ${district} (${constituency}).`,
             milestones: [
                 { title: "Technical Sanction & Geo-Survey", plannedDate: "2025-09-10", actualDate: "2025-09-15", status: "COMPLETED" },
-                { title: "Civil Foundations & Assembly", plannedDate: "2026-02-28", actualDate: compPct > 50 ? "2026-03-10" : null, status: compPct > 50 ? "COMPLETED" : (isDel ? "DELAYED" : "ONGOING") },
-                { title: "Final Commissioning & Audit", plannedDate: "2026-10-31", actualDate: itemStatus === 'COMPLETED' ? "2026-04-15" : null, status: itemStatus === 'COMPLETED' ? "COMPLETED" : "PENDING" }
+                { title: "Civil Foundations & Assembly", plannedDate: "2026-02-28", actualDate: "2026-03-10", status: "ONGOING" },
+                { title: "Final Commissioning & Audit", plannedDate: "2026-10-31", actualDate: null, status: "PENDING" }
             ],
             timeline: [
-                { event: "Administrative Sanction Issued", date: "2025-07-05", category: "Approval", desc: `Sanction recorded by Nodal Officer (${district}).` },
-                { event: "Funds Disbursed", date: "2025-07-25", category: "Release", desc: `Installment of ₹${released} Lakhs released.` }
+                { event: "Administrative Sanction Issued", date: "2025-07-05", category: "Approval", desc: `Sanction recorded by Nodal Officer (${district}).` }
             ],
             coordinates: { lat: 25.32, lng: 82.98 }
-        };
-    });
+        }
+    ];
 }
 
 // Generate realistic mock alerts customized to any filter combination so alerts feed is NEVER empty
 function generateFallbackAlerts(criteria = {}) {
+    if (typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        return window.MPLADS_DATA_ENGINE.generateAlertsForCombination(criteria);
+    }
     const district = criteria.district && criteria.district !== 'ALL' ? criteria.district : 'Varanasi';
     const category = criteria.category && criteria.category !== 'ALL' ? criteria.category : 'Drinking Water & Sanitation';
     const severity = criteria.risk && criteria.risk !== 'ALL' ? criteria.risk : 'HIGH';
@@ -415,133 +366,69 @@ function renderDashboardKPIs() {
 
     const district = document.getElementById('dashFilterDistrict')?.value || 'ALL';
     const fy = document.getElementById('dashFilterFY')?.value || 'ALL';
+    const constituency = document.getElementById('dashFilterConstituency')?.value || 'ALL';
     const category = document.getElementById('dashFilterCategory')?.value || 'ALL';
     const status = document.getElementById('dashFilterStatus')?.value || 'ALL';
     const risk = document.getElementById('dashFilterRisk')?.value || 'ALL';
 
-    const isSingleDistrict = district !== 'ALL';
-    const isGeneralFilter = category === 'ALL' && status === 'ALL' && risk === 'ALL';
+    let totalAllocatedCr = 0;
+    let totalReleasedCr = 0;
+    let totalExpenditureCr = 0;
+    let utilizationRate = 81.2;
+    let displayWorksCount = 4;
+    let displayCompleted = 2;
+    let displayOngoing = 1;
+    let displayDelayed = 1;
+    let activeAlertsCount = 1;
 
-    // 1. Aggregations from active filtered dataset
-    let totalAllocatedLakhs = 0;
-    let totalReleasedLakhs = 0;
-    let totalExpenditureLakhs = 0;
-    let completedCount = 0;
-    let ongoingCount = 0;
-    let delayedCount = 0;
+    // Use centralized dynamic multi-category engine for rich, distinct metrics
+    if (typeof window.MPLADS_DATA_ENGINE !== 'undefined') {
+        const comboData = window.MPLADS_DATA_ENGINE.calculateDataForCombination({
+            fy, district, constituency, category, status, risk
+        });
+        totalAllocatedCr = comboData.totalAllocationCr;
+        totalReleasedCr = comboData.fundsReleasedCr;
+        totalExpenditureCr = comboData.totalExpenditureCr;
+        utilizationRate = comboData.utilizationRatePct;
+        displayWorksCount = comboData.totalWorks;
+        displayCompleted = comboData.completedWorks;
+        displayOngoing = comboData.ongoingWorks;
+        displayDelayed = comboData.delayedWorks;
+        activeAlertsCount = comboData.activeAlerts;
+    } else {
+        // Fallback aggregation
+        let totalAllocatedLakhs = 0;
+        let totalReleasedLakhs = 0;
+        let totalExpenditureLakhs = 0;
+        let cCount = 0;
+        let oCount = 0;
+        let dCount = 0;
 
-    activeDashboardWorks.forEach(w => {
-        totalAllocatedLakhs += Math.max(0, w.approvedAmountLakhs || 0);
-        totalReleasedLakhs += Math.max(0, w.releasedAmountLakhs || 0);
-        totalExpenditureLakhs += Math.max(0, w.expenditureLakhs || 0);
-        if (w.status === 'COMPLETED') completedCount++;
-        else if (w.status === 'ONGOING') ongoingCount++;
-        else if (w.status === 'DELAYED') delayedCount++;
-    });
+        activeDashboardWorks.forEach(w => {
+            totalAllocatedLakhs += Math.max(0, w.approvedAmountLakhs || 0);
+            totalReleasedLakhs += Math.max(0, w.releasedAmountLakhs || 0);
+            totalExpenditureLakhs += Math.max(0, w.expenditureLakhs || 0);
+            if (w.status === 'COMPLETED') cCount++;
+            else if (w.status === 'ONGOING') oCount++;
+            else if (w.status === 'DELAYED') dCount++;
+        });
 
-    let displayWorksCount = activeDashboardWorks.length;
-    let displayCompleted = completedCount;
-    let displayOngoing = ongoingCount;
-    let displayDelayed = delayedCount;
-    let activeAlertsCount = activeDashboardAlerts.length;
+        displayWorksCount = Math.max(activeDashboardWorks.length, 4);
+        displayCompleted = Math.max(cCount, 1);
+        displayOngoing = Math.max(oCount, 1);
+        displayDelayed = Math.max(dCount, 1);
+        activeAlertsCount = Math.max(activeDashboardAlerts.length, 1);
 
-    let totalAllocatedCr = totalAllocatedLakhs / 100;
-    let totalReleasedCr = totalReleasedLakhs / 100;
-    let totalExpenditureCr = totalExpenditureLakhs / 100;
-    let utilizationRate = totalReleasedCr > 0 ? (totalExpenditureCr / totalReleasedCr) * 100 : 81.2;
-
-    // 2. Macro enhancement when general district overview is active
-    if (isSingleDistrict && isGeneralFilter && demo?.districtUtilization) {
-        const cleanD = district.trim().toLowerCase();
-        const distUtil = demo.districtUtilization.find(d => 
-            (d.district || '').trim().toLowerCase() === cleanD ||
-            (cleanD === 'kanpur nagar' && (d.district || '').toLowerCase().includes('kanpur'))
-        );
-        if (distUtil) {
-            if (fy !== 'ALL' && distUtil.byYear && distUtil.byYear[fy]) {
-                const y = distUtil.byYear[fy];
-                totalAllocatedCr = y.allocated;
-                totalReleasedCr = y.released;
-                totalExpenditureCr = y.expenditure;
-                utilizationRate = y.utilizationPct;
-                displayWorksCount = y.totalWorks;
-            } else if (fy !== 'ALL') {
-                const ratio = fy === '2025-26' ? 0.45 : (fy === '2024-25' ? 0.35 : 0.20);
-                totalAllocatedCr = Math.round(distUtil.allocated * ratio * 10) / 10;
-                totalReleasedCr = Math.round(distUtil.released * ratio * 10) / 10;
-                totalExpenditureCr = Math.round(distUtil.expenditure * ratio * 10) / 10;
-                utilizationRate = distUtil.utilizationPct;
-                displayWorksCount = Math.max(4, Math.round(distUtil.totalWorks * ratio));
-            } else {
-                totalAllocatedCr = distUtil.allocated;
-                totalReleasedCr = distUtil.released;
-                totalExpenditureCr = distUtil.expenditure;
-                utilizationRate = distUtil.utilizationPct;
-                displayWorksCount = distUtil.totalWorks;
-            }
-            displayCompleted = Math.max(2, Math.round(displayWorksCount * 0.65));
-            displayOngoing = Math.max(1, Math.round(displayWorksCount * 0.23));
-            displayDelayed = Math.max(1, displayWorksCount - displayCompleted - displayOngoing);
-        }
-    } else if (!isSingleDistrict && isGeneralFilter && demo?.kpis) {
-        if (fy !== 'ALL' && demo.kpis.byYear && demo.kpis.byYear[fy]) {
-            const y = demo.kpis.byYear[fy];
-            totalAllocatedCr = y.totalAllocationCr;
-            totalReleasedCr = y.fundsReleasedCr;
-            totalExpenditureCr = y.totalExpenditureCr;
-            utilizationRate = y.utilizationRatePct;
-            displayWorksCount = y.totalWorks;
-            displayCompleted = y.completedWorks;
-            displayOngoing = y.ongoingWorks;
-            displayDelayed = y.delayedWorks;
-            activeAlertsCount = y.activeAlerts;
-        } else if (fy === 'ALL') {
-            totalAllocatedCr = demo.kpis.totalAllocationCr || 450.00;
-            totalReleasedCr = demo.kpis.fundsReleasedCr || 385.50;
-            totalExpenditureCr = demo.kpis.totalExpenditureCr || 312.80;
-            utilizationRate = demo.kpis.utilizationRatePct || 81.14;
-            displayWorksCount = demo.kpis.totalWorks || 1420;
-            displayCompleted = demo.kpis.completedWorks || 948;
-            displayOngoing = demo.kpis.ongoingWorks || 352;
-            displayDelayed = demo.kpis.delayedWorks || 120;
-            activeAlertsCount = demo.kpis.activeAlerts || 18;
-        }
+        totalAllocatedCr = Math.max(totalAllocatedLakhs / 100, 1.45);
+        totalReleasedCr = Math.max(totalReleasedLakhs / 100, Math.round(totalAllocatedCr * 0.85 * 10) / 10);
+        totalExpenditureCr = Math.max(totalExpenditureLakhs / 100, Math.round(totalReleasedCr * 0.78 * 10) / 10);
+        utilizationRate = totalReleasedCr > 0 ? (totalExpenditureCr / totalReleasedCr) * 100 : 81.2;
     }
 
-    // 3. MANDATORY NON-ZERO RECONCILIATION & ENFORCEMENT
-    // Ensure every single KPI value is strictly positive (> 0) regardless of the filter combination selected
-    displayWorksCount = Math.max(displayWorksCount, 4);
-    displayCompleted = Math.max(displayCompleted, 1);
-    displayOngoing = Math.max(displayOngoing, 1);
-    displayDelayed = Math.max(displayDelayed, 1);
-    activeAlertsCount = Math.max(activeAlertsCount, 1);
-
-    if (displayWorksCount < displayCompleted + displayOngoing + displayDelayed) {
-        displayWorksCount = displayCompleted + displayOngoing + displayDelayed;
-    }
-
-    if (totalAllocatedCr <= 0) {
-        totalAllocatedCr = Math.round((displayWorksCount * 1.75 + 5.5) * 10) / 10;
-    }
-    totalAllocatedCr = Math.max(totalAllocatedCr, 8.50);
-
-    if (totalReleasedCr <= 0 || totalReleasedCr > totalAllocatedCr) {
-        totalReleasedCr = Math.round(totalAllocatedCr * 0.86 * 10) / 10;
-    }
-    totalReleasedCr = Math.max(totalReleasedCr, 7.20);
-
-    if (totalExpenditureCr <= 0 || totalExpenditureCr > totalReleasedCr) {
-        totalExpenditureCr = Math.round(totalReleasedCr * 0.81 * 10) / 10;
-    }
-    totalExpenditureCr = Math.max(totalExpenditureCr, 5.80);
-
-    utilizationRate = totalReleasedCr > 0 ? (totalExpenditureCr / totalReleasedCr) * 100 : 81.2;
-    if (utilizationRate <= 0) utilizationRate = 78.5;
-
-    // Derived percentage indicators
-    const relPct = Math.max(72.0, totalAllocatedCr > 0 ? (totalReleasedCr / totalAllocatedCr) * 100 : 84.5);
-    const compRatio = Math.max(25.0, displayWorksCount > 0 ? (displayCompleted / displayWorksCount) * 100 : 58.0);
-    const delRatio = Math.max(5.0, displayWorksCount > 0 ? (displayDelayed / displayWorksCount) * 100 : 12.0);
+    // Derived percentage indicators - strictly positive
+    const relPct = Math.min(99.9, Math.max(68.0, totalAllocatedCr > 0 ? (totalReleasedCr / totalAllocatedCr) * 100 : 84.5));
+    const compRatio = Math.min(99.0, Math.max(18.0, displayWorksCount > 0 ? (displayCompleted / displayWorksCount) * 100 : 58.0));
+    const delRatio = Math.min(45.0, Math.max(4.0, displayWorksCount > 0 ? (displayDelayed / displayWorksCount) * 100 : 12.0));
 
     // 1. Total Allocation
     const elAlloc = document.getElementById('kpiTotalAllocation');
@@ -605,93 +492,69 @@ function renderDashboardKPIs() {
     if (elAlt) elAlt.textContent = fmt.formatNumber(activeAlertsCount);
 }
 
-// 2. Render 4 Chart.js Visualizations Responsively - NON-ZERO GUARANTEE
+// 2. Render 4 Chart.js Visualizations Responsively - NON-ZERO GUARANTEE & DISTINCT CATEGORIES
 function renderDashboardCharts() {
     if (typeof Chart === 'undefined') return;
-    const demo = window.MPLADS_DEMO_DATA;
-    if (!demo) return;
 
+    const fy = document.getElementById('dashFilterFY')?.value || 'ALL';
     const selectedDist = document.getElementById('dashFilterDistrict')?.value || 'ALL';
+    const constituency = document.getElementById('dashFilterConstituency')?.value || 'ALL';
+    const category = document.getElementById('dashFilterCategory')?.value || 'ALL';
+    const status = document.getElementById('dashFilterStatus')?.value || 'ALL';
+    const risk = document.getElementById('dashFilterRisk')?.value || 'ALL';
+
+    const comboData = (typeof window.MPLADS_DATA_ENGINE !== 'undefined') ?
+        window.MPLADS_DATA_ENGINE.calculateDataForCombination({ fy, district: selectedDist, constituency, category, status, risk }) : null;
 
     // --- Chart 1: Allocation vs Released vs Expenditure (Grouped Bar) ---
     const ctxAllocExp = document.getElementById('allocationVsExpenditureChart');
     if (ctxAllocExp) {
         if (chartAllocExp) chartAllocExp.destroy();
 
-        let districts;
-        if (selectedDist !== 'ALL') {
-            const cleanD = selectedDist.trim().toLowerCase();
-            const found = (demo.districtUtilization || []).find(d => 
-                (d.district || '').trim().toLowerCase() === cleanD ||
-                (cleanD === 'kanpur nagar' && (d.district || '').toLowerCase().includes('kanpur'))
-            );
-            const state = (found && found.state) || (window.getStateForDistrict ? window.getStateForDistrict(selectedDist) : null);
-            let peers = (demo.districtUtilization || []).filter(d => (d.district || '').trim().toLowerCase() !== cleanD);
-            if (state) {
-                const statePeers = peers.filter(d => d.state === state);
-                if (statePeers.length > 0) peers = statePeers;
-            }
-            const currentItem = found || {
-                district: selectedDist,
-                allocated: 45.0,
-                released: 40.0,
-                expenditure: 35.0
-            };
-            districts = [currentItem, ...peers.slice(0, 5)];
-        } else {
-            districts = (demo.districtUtilization || []).slice(0, 6);
+        let chartDistricts = comboData ? comboData.districtDistributions : [];
+        if (chartDistricts.length === 0) {
+            chartDistricts = [
+                { district: "Varanasi", allocated: 22.4, released: 19.8, expenditure: 16.5 },
+                { district: "Gorakhpur", allocated: 18.2, released: 16.0, expenditure: 13.8 },
+                { district: "Prayagraj", allocated: 19.5, released: 17.2, expenditure: 14.5 },
+                { district: "Lucknow", allocated: 21.0, released: 18.5, expenditure: 15.6 },
+                { district: "Ayodhya", allocated: 14.5, released: 12.8, expenditure: 10.4 },
+                { district: "Kanpur Nagar", allocated: 20.2, released: 17.8, expenditure: 15.1 }
+            ];
         }
 
-        const selectedFY = document.getElementById('dashFilterFY')?.value || 'ALL';
-
-        const getDistAlloc = (d) => {
-            let val;
-            if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) val = d.byYear[selectedFY].allocated;
-            else if (selectedFY === '2025-26') val = Math.round(d.allocated * 0.45 * 10) / 10;
-            else if (selectedFY === '2024-25') val = Math.round(d.allocated * 0.35 * 10) / 10;
-            else if (selectedFY === '2023-24') val = Math.round(d.allocated * 0.20 * 10) / 10;
-            else val = d.allocated;
-            return Math.max(12.0, val || 25.0);
-        };
-        const getDistRel = (d) => {
-            let val;
-            if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) val = d.byYear[selectedFY].released;
-            else if (selectedFY === '2025-26') val = Math.round(d.released * 0.44 * 10) / 10;
-            else if (selectedFY === '2024-25') val = Math.round(d.released * 0.36 * 10) / 10;
-            else if (selectedFY === '2023-24') val = Math.round(d.released * 0.20 * 10) / 10;
-            else val = d.released;
-            return Math.max(10.5, val || 21.5);
-        };
-        const getDistExp = (d) => {
-            let val;
-            if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) val = d.byYear[selectedFY].expenditure;
-            else if (selectedFY === '2025-26') val = Math.round(d.expenditure * 0.42 * 10) / 10;
-            else if (selectedFY === '2024-25') val = Math.round(d.expenditure * 0.37 * 10) / 10;
-            else if (selectedFY === '2023-24') val = Math.round(d.expenditure * 0.21 * 10) / 10;
-            else val = d.expenditure;
-            return Math.max(8.8, val || 18.0);
-        };
+        // If a single district is filtered, highlight it first
+        if (selectedDist !== 'ALL') {
+            const cleanD = selectedDist.trim().toLowerCase();
+            const target = chartDistricts.find(d => (d.district || '').toLowerCase().includes(cleanD));
+            const others = chartDistricts.filter(d => !(d.district || '').toLowerCase().includes(cleanD));
+            if (target) {
+                chartDistricts = [target, ...others.slice(0, 5)];
+            }
+        } else {
+            chartDistricts = chartDistricts.slice(0, 6);
+        }
 
         chartAllocExp = new Chart(ctxAllocExp, {
             type: 'bar',
             data: {
-                labels: districts.map(d => d.district),
+                labels: chartDistricts.map(d => d.district),
                 datasets: [
                     {
                         label: 'Allocation (₹ Cr)',
-                        data: districts.map(getDistAlloc),
+                        data: chartDistricts.map(d => Math.max(0.65, d.allocated)),
                         backgroundColor: '#1e3a8a',
                         borderRadius: 4
                     },
                     {
                         label: 'Released (₹ Cr)',
-                        data: districts.map(getDistRel),
+                        data: chartDistricts.map(d => Math.max(0.55, d.released)),
                         backgroundColor: '#3b82f6',
                         borderRadius: 4
                     },
                     {
                         label: 'Expenditure (₹ Cr)',
-                        data: districts.map(getDistExp),
+                        data: chartDistricts.map(d => Math.max(0.45, d.expenditure)),
                         backgroundColor: '#10b981',
                         borderRadius: 4
                     }
@@ -725,19 +588,13 @@ function renderDashboardCharts() {
     if (ctxStatus) {
         if (chartWorkStatus) chartWorkStatus.destroy();
 
-        const counts = { PENDING: 0, ONGOING: 0, COMPLETED: 0, DELAYED: 0 };
-        activeDashboardWorks.forEach(w => {
-            if (counts[w.status] !== undefined) counts[w.status]++;
-        });
-
-        // Ensure all displayed status segments have strictly non-zero counts
         const statusLabels = ["Completed", "Ongoing", "Delayed", "Pending"];
-        let statusValues = [
-            Math.max(counts.COMPLETED, 8),
-            Math.max(counts.ONGOING, 4),
-            Math.max(counts.DELAYED, 2),
-            Math.max(counts.PENDING, 1)
-        ];
+        let statusValues = comboData ? [
+            Math.max(comboData.completedWorks, 1),
+            Math.max(comboData.ongoingWorks, 1),
+            Math.max(comboData.delayedWorks, 1),
+            Math.max(comboData.pendingWorks, 1)
+        ] : [14, 6, 2, 1];
         const statusColors = ["#10b981", "#3b82f6", "#ef4444", "#f59e0b"];
 
         chartWorkStatus = new Chart(ctxStatus, {
@@ -777,31 +634,9 @@ function renderDashboardCharts() {
     if (ctxMonthly) {
         if (chartMonthly) chartMonthly.destroy();
 
-        const selectedFY = document.getElementById('dashFilterFY')?.value || 'ALL';
-        let monthlyLabels = demo.monthlyExpenditure?.labels || [
-            "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
-        ];
-        let expData = demo.monthlyExpenditure?.expenditure || [12.4, 15.6, 18.2, 22.0, 26.5, 31.2, 28.4, 30.1, 33.5, 29.8, 32.4, 35.8];
-
-        if (selectedFY !== 'ALL' && demo.monthlyExpenditure?.byYear && demo.monthlyExpenditure.byYear[selectedFY]) {
-            monthlyLabels = demo.monthlyExpenditure.byYear[selectedFY].labels;
-            expData = demo.monthlyExpenditure.byYear[selectedFY].expenditure;
-        }
-
-        if (selectedDist !== 'ALL') {
-            const cleanD = selectedDist.trim().toLowerCase();
-            const found = (demo.districtUtilization || []).find(d => 
-                (d.district || '').trim().toLowerCase() === cleanD ||
-                (cleanD === 'kanpur nagar' && (d.district || '').toLowerCase().includes('kanpur'))
-            );
-            const distAlloc = (selectedFY !== 'ALL' && found?.byYear?.[selectedFY]?.expenditure) || found?.expenditure || 35.0;
-            const totalExpForFY = expData.reduce((a, b) => a + b, 0) || 150.0;
-            const ratio = distAlloc / totalExpForFY;
-            expData = expData.map(v => Math.round(v * ratio * 10) / 10);
-        }
-
-        // Hard guarantee: every single month must have non-zero expenditure
-        expData = expData.map(v => Math.max(1.2, Number(v) || 2.5));
+        const monthlyLabels = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+        let expData = comboData ? comboData.monthlyCurve : [2.4, 2.8, 3.2, 3.6, 3.4, 3.1, 3.5, 3.3, 3.0, 3.2, 3.4, 2.2];
+        expData = expData.map(v => Math.max(0.45, Number(v) || 1.2));
 
         chartMonthly = new Chart(ctxMonthly, {
             type: 'line',
@@ -847,34 +682,19 @@ function renderDashboardCharts() {
     if (ctxDistrict) {
         if (chartDistrictUtil) chartDistrictUtil.destroy();
 
-        const selectedFY = document.getElementById('dashFilterFY')?.value || 'ALL';
-        const getDistUtilVal = (d) => {
-            let val;
-            if (selectedFY !== 'ALL' && d.byYear && d.byYear[selectedFY]) val = d.byYear[selectedFY].utilizationPct;
-            else val = d.utilizationPct;
-            return Math.max(72.5, Number(val) || 81.0);
-        };
-
-        let districtsForChart;
-        if (selectedDist !== 'ALL') {
-            const cleanD = selectedDist.trim().toLowerCase();
-            const found = (demo.districtUtilization || []).find(d => 
-                (d.district || '').trim().toLowerCase() === cleanD ||
-                (cleanD === 'kanpur nagar' && (d.district || '').toLowerCase().includes('kanpur'))
-            );
-            const state = (found && found.state) || (window.getStateForDistrict ? window.getStateForDistrict(selectedDist) : null);
-            let peers = (demo.districtUtilization || []).filter(d => (d.district || '').trim().toLowerCase() !== cleanD);
-            if (state) {
-                const statePeers = peers.filter(d => d.state === state);
-                if (statePeers.length > 0) peers = statePeers;
-            }
-            const currentItem = found || { district: selectedDist, utilizationPct: 88.0 };
-            districtsForChart = [currentItem, ...peers.slice(0, 7)];
-        } else {
-            districtsForChart = (demo.districtUtilization || []).slice(0, 8);
+        let districtsForChart = comboData ? comboData.districtDistributions : [];
+        if (districtsForChart.length === 0) {
+            districtsForChart = [
+                { district: "Varanasi", utilizationPct: 84.5 },
+                { district: "Gorakhpur", utilizationPct: 81.2 },
+                { district: "Prayagraj", utilizationPct: 78.4 },
+                { district: "Lucknow", utilizationPct: 86.0 },
+                { district: "Ayodhya", utilizationPct: 74.2 },
+                { district: "Kanpur Nagar", utilizationPct: 82.8 }
+            ];
         }
 
-        const utilData = districtsForChart.map(getDistUtilVal);
+        const utilData = districtsForChart.map(d => Math.max(55.0, Number(d.utilizationPct) || 80.0));
 
         chartDistrictUtil = new Chart(ctxDistrict, {
             type: 'bar',
@@ -883,7 +703,7 @@ function renderDashboardCharts() {
                 datasets: [{
                     label: 'Utilization %',
                     data: utilData,
-                    backgroundColor: utilData.map(pct => pct >= 80 ? '#10b981' : (pct >= 75 ? '#3b82f6' : '#f59e0b')),
+                    backgroundColor: utilData.map(pct => pct >= 80 ? '#10b981' : (pct >= 70 ? '#3b82f6' : '#f59e0b')),
                     borderRadius: 5
                 }]
             },
