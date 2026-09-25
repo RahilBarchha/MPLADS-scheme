@@ -48,7 +48,7 @@ function initMonitoringEvents() {
     }
 
     // Direct change listeners on select dropdowns
-    ['monFilterFY', 'monFilterState', 'monFilterDistrict', 'monFilterConstituency', 'monFilterMP', 'monFilterCategory', 'monFilterStatus', 'monFilterRisk'].forEach(id => {
+    ['monFilterFY', 'monFilterState', 'monFilterDistrict', 'monFilterMP', 'monFilterCategory', 'monFilterStatus', 'monFilterRisk'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('change', () => {
@@ -77,14 +77,9 @@ function initMonitoringEvents() {
                         }
                         distSelect.value = 'ALL';
                     }
-                    const constEl = document.getElementById('monFilterConstituency');
-                    if (constEl) constEl.value = 'ALL';
                     const mpEl = document.getElementById('monFilterMP');
                     if (mpEl) mpEl.value = 'ALL';
                 } else if (id === 'monFilterDistrict') {
-                    // Reset constituency and MP to ALL so selecting a district never causes 0 results
-                    const constEl = document.getElementById('monFilterConstituency');
-                    if (constEl) constEl.value = 'ALL';
                     const mpEl = document.getElementById('monFilterMP');
                     if (mpEl) mpEl.value = 'ALL';
                 }
@@ -100,7 +95,6 @@ function initMonitoringEvents() {
             setVal('monFilterFY', 'ALL');
             setVal('monFilterState', 'ALL');
             setVal('monFilterDistrict', 'ALL');
-            setVal('monFilterConstituency', 'ALL');
             setVal('monFilterMP', 'ALL');
             setVal('monFilterCategory', 'ALL');
             setVal('monFilterStatus', 'ALL');
@@ -121,7 +115,7 @@ function getActiveMonitoringCriteria() {
         fy: document.getElementById('monFilterFY')?.value || 'ALL',
         state: document.getElementById('monFilterState')?.value || 'ALL',
         district: document.getElementById('monFilterDistrict')?.value || 'ALL',
-        constituency: document.getElementById('monFilterConstituency')?.value || 'ALL',
+        constituency: 'ALL',
         mp: document.getElementById('monFilterMP')?.value || 'ALL',
         category: document.getElementById('monFilterCategory')?.value || 'ALL',
         status: document.getElementById('monFilterStatus')?.value || 'ALL',
@@ -361,8 +355,6 @@ window.inspectDistrictWorks = function (districtName) {
     if (distSelect) {
         distSelect.value = districtName;
     }
-    const constEl = document.getElementById('monFilterConstituency');
-    if (constEl) constEl.value = 'ALL';
     const mpEl = document.getElementById('monFilterMP');
     if (mpEl) mpEl.value = 'ALL';
 
@@ -383,15 +375,13 @@ window.resetDistrictView = function () {
     if (distSelect) distSelect.value = 'ALL';
     const distSearch = document.getElementById('districtSearchInput');
     if (distSearch) distSearch.value = '';
-    const constEl = document.getElementById('monFilterConstituency');
-    if (constEl) constEl.value = 'ALL';
     const mpEl = document.getElementById('monFilterMP');
     if (mpEl) mpEl.value = 'ALL';
 
     applyMonitoringFilters();
 
     if (typeof window.showMpladsToast === 'function') {
-        window.showMpladsToast('Showing all 8 administrative districts.', 'info');
+        window.showMpladsToast('Showing all monitored administrative districts.', 'info');
     }
 };
 
@@ -441,7 +431,7 @@ function applyMonitoringFilters() {
     const fy = document.getElementById('monFilterFY')?.value || 'ALL';
     const state = document.getElementById('monFilterState')?.value || 'ALL';
     const district = document.getElementById('monFilterDistrict')?.value || 'ALL';
-    const constituency = document.getElementById('monFilterConstituency')?.value || 'ALL';
+    const constituency = 'ALL';
     const mp = document.getElementById('monFilterMP')?.value || 'ALL';
     const category = document.getElementById('monFilterCategory')?.value || 'ALL';
     const status = document.getElementById('monFilterStatus')?.value || 'ALL';
